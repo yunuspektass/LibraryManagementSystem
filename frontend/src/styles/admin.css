@@ -1,0 +1,53 @@
+.admin-container {
+  padding: 30px;
+}
+
+.admin-sections {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.admin-form,
+.admin-list {
+  flex: 1;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.admin-form h2,
+.admin-list h2 {
+  margin-bottom: 15px;
+}
+
+.admin-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.add-btn,
+.update-btn,
+.delete-btn {
+  padding: 10px 15px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.add-btn {
+  background-color: #4a7c59;
+}
+
+.update-btn {
+  background-color: #145c9e;
+}
+
+.delete-btn {
+  background-color: #b02a2a;
+  margin-left: 10px;
+}

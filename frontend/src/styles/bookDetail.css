@@ -1,0 +1,36 @@
+.detail-container {
+  padding: 30px;
+}
+
+.detail-container h1 {
+  margin-bottom: 20px;
+}
+
+.btn-area {
+  margin: 20px 0;
+}
+
+.borrow-btn,
+.return-btn {
+  padding: 10px 15px;
+  border: none;
+  margin-right: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  color: white;
+}
+
+.borrow-btn {
+  background: #4a7c59;
+}
+
+.return-btn {
+  background: #b02a2a;
+}
+
+.back-btn {
+  display: inline-block;
+  margin-top: 15px;
+  text-decoration: none;
+  color: #145c9e;
+}
