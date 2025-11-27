@@ -1,26 +1,34 @@
+import React, { useState } from "react";
 import "../styles/books.css";
 import { Link } from "react-router-dom";
 
 export default function BooksPage() {
-  // Statik örnek veri (backend gelene kadar)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [availability, setAvailability] = useState("all");
+  const [yearRange, setYearRange] = useState({ from: "", to: "" });
+
+  // Statik örnek veri
   const books = [
     {
       id: 1,
       title: "Suç ve Ceza",
       author: "Fyodor Dostoyevski",
-      category: "Roman",
+      category: "Kurgu",
       stock: 5,
       year: 1866,
-      pages: 671
+      pages: 671,
+      cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: 2,
       title: "Kürk Mantolu Madonna",
       author: "Sabahattin Ali",
-      category: "Roman",
+      category: "Kurgu",
       stock: 2,
       year: 1943,
-      pages: 176
+      pages: 176,
+      cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: 3,
@@ -29,67 +37,200 @@ export default function BooksPage() {
       category: "Distopya",
       stock: 0,
       year: 1949,
-      pages: 328
+      pages: 328,
+      cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      id: 4,
+      title: "Sapiens",
+      author: "Yuval Noah Harari",
+      category: "Bilim",
+      stock: 8,
+      year: 2011,
+      pages: 443,
+      cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      id: 5,
+      title: "Nutuk",
+      author: "Mustafa Kemal Atatürk",
+      category: "Tarih",
+      stock: 12,
+      year: 1927,
+      pages: 543,
+      cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      id: 6,
+      title: "Steve Jobs",
+      author: "Walter Isaacson",
+      category: "Biyografi",
+      stock: 3,
+      year: 2011,
+      pages: 656,
+      cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=800"
     }
   ];
 
+  const categories = ["Kurgu", "Kurgu Dışı", "Bilim", "Tarih", "Biyografi", "Distopya"];
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  const handleYearChange = (e, type) => {
+    setYearRange({ ...yearRange, [type]: e.target.value });
+  };
+
+  const resetFilters = () => {
+    setSelectedCategories([]);
+    setAvailability("all");
+    setYearRange({ from: "", to: "" });
+    setSearchQuery("");
+  };
+
+  const filteredBooks = books.filter(book => {
+    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(book.category);
+    const matchesAvailability = availability === "all" ||
+      (availability === "available" && book.stock > 0) ||
+      (availability === "borrowed" && book.stock === 0);
+    const matchesYear = (!yearRange.from || book.year >= parseInt(yearRange.from)) &&
+      (!yearRange.to || book.year <= parseInt(yearRange.to));
+
+    return matchesSearch && matchesCategory && matchesAvailability && matchesYear;
+  });
+
   return (
-    <div className="books-container">
-      <div className="books-header">
-        <h1>Kitap Koleksiyonu</h1>
-        <p>Kütüphanemizde bulunan tüm kitapları keşfedin</p>
-      </div>
-
-      <div className="books-list">
-        {books.map((book) => (
-          <div key={book.id} className="book-card">
-            <div className="book-card-cover">
-              <div className="book-card-icon">📚</div>
-              <div className={`stock-indicator ${book.stock > 0 ? 'available' : 'unavailable'}`}>
-                {book.stock > 0 ? 'Mevcut' : 'Stokta Yok'}
-              </div>
-            </div>
-
-            <div className="book-card-content">
-              <h3>{book.title}</h3>
-
-              <div className="book-meta">
-                <div className="meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>{book.author}</span>
-                </div>
-
-                <div className="meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>{book.category}</span>
-                </div>
-              </div>
-
-              <div className="book-details">
-                <span className="detail-badge">{book.year}</span>
-                <span className="detail-badge">{book.pages} sayfa</span>
-                <span className={`stock-badge ${book.stock > 0 ? 'in-stock' : 'out-stock'}`}>
-                  {book.stock > 0 ? `${book.stock} adet` : 'Yok'}
-                </span>
-              </div>
-
-              <Link className="book-detail-btn" to={`/books/${book.id}`}>
-                <span>Detayları Gör</span>
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            </div>
+    <div className="books-page-container">
+      {/* Sidebar Filters */}
+      <aside className="books-sidebar">
+        <div className="filter-section">
+          <h3>Kategori</h3>
+          <div className="checkbox-group">
+            {categories.map(category => (
+              <label key={category} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(category)}
+                  onChange={() => handleCategoryChange(category)}
+                />
+                <span>{category}</span>
+              </label>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+
+        <div className="filter-section">
+          <h3>Durum</h3>
+          <div className="radio-group">
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="availability"
+                value="all"
+                checked={availability === "all"}
+                onChange={(e) => setAvailability(e.target.value)}
+              />
+              <span>Tümü</span>
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="availability"
+                value="available"
+                checked={availability === "available"}
+                onChange={(e) => setAvailability(e.target.value)}
+              />
+              <span>Mevcut</span>
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="availability"
+                value="borrowed"
+                checked={availability === "borrowed"}
+                onChange={(e) => setAvailability(e.target.value)}
+              />
+              <span>Ödünç Alındı</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <h3>Yayın Yılı</h3>
+          <div className="year-inputs">
+            <input
+              type="number"
+              placeholder="Başlangıç"
+              value={yearRange.from}
+              onChange={(e) => handleYearChange(e, 'from')}
+            />
+            <span>-</span>
+            <input
+              type="number"
+              placeholder="Bitiş"
+              value={yearRange.to}
+              onChange={(e) => handleYearChange(e, 'to')}
+            />
+          </div>
+        </div>
+
+        <div className="filter-actions">
+          <button className="apply-btn">Filtreleri Uygula</button>
+          <button className="reset-btn" onClick={resetFilters}>Sıfırla</button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="books-main">
+        <div className="books-header-content">
+          <h1>Kitap Arama</h1>
+          <p>Koleksiyonumuzdan yeni favori kitabınızı keşfedin.</p>
+
+          <div className="search-bar-container">
+            <svg className="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Başlık, yazar veya ISBN ile arayın..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="results-info">
+            <span>{books.length} sonuçtan {filteredBooks.length} tanesi gösteriliyor</span>
+          </div>
+        </div>
+
+        <div className="books-grid">
+          {filteredBooks.map((book) => (
+            <Link to={`/books/${book.id}`} key={book.id} className="book-card-link">
+              <div className="book-card-new">
+                <div className="book-cover-image" style={{ backgroundImage: `url(${book.cover})` }}>
+                  {/* Fallback if image fails or for design */}
+                </div>
+                <div className="book-info">
+                  <h3>{book.title}</h3>
+                  <p className="book-author">{book.author}</p>
+                  <div className={`status-badge-new ${book.stock > 0 ? 'available' : 'borrowed'}`}>
+                    {book.stock > 0 ? 'Mevcut' : 'Ödünç Alındı'}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </main>
     </div>
   );
 }
