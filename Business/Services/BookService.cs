@@ -1,5 +1,5 @@
-﻿using LibraryManagementSystem.Business.Services.Interfaces;
-using LibraryManagementSystem.Business.GenericRepository.IntRep;
+using LibraryManagementSystem.Business.GenericRepository.ConcRep;
+using LibraryManagementSystem.Business.Services.Interfaces;
 using LibraryManagementSystem.Core.Responses;
 using LibraryManagementSystem.Domain.Entities;
 
@@ -7,9 +7,9 @@ namespace LibraryManagementSystem.Business.Services;
 
 public class BookService : IBookService
 {
-    private readonly IBookRepository _bookRepository;
+    private readonly BookRepository _bookRepository;
 
-    public BookService(IBookRepository bookRepository)
+    public BookService(BookRepository bookRepository)
     {
         _bookRepository = bookRepository;
     }
@@ -18,7 +18,7 @@ public class BookService : IBookService
     {
         if (string.IsNullOrWhiteSpace(book.Title))
         {
-            return ServiceResult<Book>.Fail("Kitap ba?l??? zorunludur.");
+            return ServiceResult<Book>.Fail("Kitap basligi zorunludur.");
         }
 
         if (string.IsNullOrWhiteSpace(book.ISBN))
@@ -36,7 +36,7 @@ public class BookService : IBookService
         var existing = await _bookRepository.GetByIdAsync(id, cancellationToken);
         if (existing is null)
         {
-            return ServiceResult.Fail("Kitap bulunamad?.");
+            return ServiceResult.Fail("Kitap bulunamadi.");
         }
 
         await _bookRepository.DeleteAsync(existing, cancellationToken);
@@ -59,7 +59,7 @@ public class BookService : IBookService
     {
         var book = await _bookRepository.GetWithDetailsAsync(id, cancellationToken);
         return book is null
-            ? ServiceResult<Book>.Fail("Kitap bulunamad?.")
+            ? ServiceResult<Book>.Fail("Kitap bulunamadi.")
             : ServiceResult<Book>.Ok(book);
     }
 
@@ -68,7 +68,7 @@ public class BookService : IBookService
         var existing = await _bookRepository.GetByIdAsync(book.Id, cancellationToken);
         if (existing is null)
         {
-            return ServiceResult<Book>.Fail("Kitap bulunamad?.");
+            return ServiceResult<Book>.Fail("Kitap bulunamadi.");
         }
 
         existing.Title = book.Title;
@@ -79,6 +79,6 @@ public class BookService : IBookService
         existing.IsAvailable = book.IsAvailable;
 
         await _bookRepository.UpdateAsync(existing, cancellationToken);
-        return ServiceResult<Book>.Ok(existing, "Kitap g?ncellendi.");
+        return ServiceResult<Book>.Ok(existing, "Kitap guncellendi.");
     }
 }

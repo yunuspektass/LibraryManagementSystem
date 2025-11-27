@@ -1,5 +1,5 @@
-﻿using LibraryManagementSystem.Business.Services.Interfaces;
-using LibraryManagementSystem.Business.GenericRepository.IntRep;
+using LibraryManagementSystem.Business.GenericRepository.ConcRep;
+using LibraryManagementSystem.Business.Services.Interfaces;
 using LibraryManagementSystem.Core.Responses;
 using LibraryManagementSystem.Domain.Entities;
 
@@ -7,9 +7,9 @@ namespace LibraryManagementSystem.Business.Services;
 
 public class MemberService : IMemberService
 {
-    private readonly IMemberRepository _memberRepository;
+    private readonly MemberRepository _memberRepository;
 
-    public MemberService(IMemberRepository memberRepository)
+    public MemberService(MemberRepository memberRepository)
     {
         _memberRepository = memberRepository;
     }
@@ -26,7 +26,7 @@ public class MemberService : IMemberService
             : member.RegistrationDate;
 
         var created = await _memberRepository.AddAsync(member, cancellationToken);
-        return ServiceResult<Member>.Ok(created, "?ye eklendi.");
+        return ServiceResult<Member>.Ok(created, "Uye eklendi.");
     }
 
     public async Task<ServiceResult> DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -34,11 +34,11 @@ public class MemberService : IMemberService
         var existing = await _memberRepository.GetByIdAsync(id, cancellationToken);
         if (existing is null)
         {
-            return ServiceResult.Fail("?ye bulunamad?.");
+            return ServiceResult.Fail("Uye bulunamadi.");
         }
 
         await _memberRepository.DeleteAsync(existing, cancellationToken);
-        return ServiceResult.Ok("?ye silindi.");
+        return ServiceResult.Ok("Uye silindi.");
     }
 
     public async Task<ServiceResult<IReadOnlyCollection<Member>>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -51,7 +51,7 @@ public class MemberService : IMemberService
     {
         var member = await _memberRepository.GetByIdAsync(id, cancellationToken);
         return member is null
-            ? ServiceResult<Member>.Fail("?ye bulunamad?.")
+            ? ServiceResult<Member>.Fail("Uye bulunamadi.")
             : ServiceResult<Member>.Ok(member);
     }
 
@@ -59,7 +59,7 @@ public class MemberService : IMemberService
     {
         var member = await _memberRepository.GetWithBorrowHistoryAsync(id, cancellationToken);
         return member is null
-            ? ServiceResult<Member>.Fail("?ye bulunamad?.")
+            ? ServiceResult<Member>.Fail("Uye bulunamadi.")
             : ServiceResult<Member>.Ok(member);
     }
 
@@ -68,7 +68,7 @@ public class MemberService : IMemberService
         var existing = await _memberRepository.GetByIdAsync(member.Id, cancellationToken);
         if (existing is null)
         {
-            return ServiceResult<Member>.Fail("?ye bulunamad?.");
+            return ServiceResult<Member>.Fail("Uye bulunamadi.");
         }
 
         existing.Name = member.Name;
@@ -78,6 +78,6 @@ public class MemberService : IMemberService
         existing.RegistrationDate = member.RegistrationDate;
 
         await _memberRepository.UpdateAsync(existing, cancellationToken);
-        return ServiceResult<Member>.Ok(existing, "?ye g?ncellendi.");
+        return ServiceResult<Member>.Ok(existing, "Uye guncellendi.");
     }
 }

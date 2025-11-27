@@ -1,12 +1,15 @@
 ﻿using LibraryManagementSystem.Business.GenericRepository.IntRep;
+using LibraryManagementSystem.Business.GenericRepository.ConcRep;
 using LibraryManagementSystem.Business.Services;
 using LibraryManagementSystem.Business.Services.Interfaces;
 using LibraryManagementSystem.DataAccess.Context;
-using LibraryManagementSystem.DataAccess.Repositories;
+using LibraryManagementSystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Enable attribute-routed controllers; endpoints won't work without it.
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -15,12 +18,21 @@ var connectionString = builder.Configuration.GetConnectionString("LibraryDb")
 
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(connectionString));
+builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<LibraryContext>());
 
-builder.Services.AddScoped<IBookRepository, BookRepository>();
-builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+builder.Services.AddScoped<IRepository<Author>, AuthorRepository>();
+builder.Services.AddScoped<IRepository<Book>, BookRepository>();
+builder.Services.AddScoped<IRepository<BorrowRecord>, BorrowRecordRepository>();
+builder.Services.AddScoped<IRepository<Category>, CategoryRepository>();
+builder.Services.AddScoped<IRepository<Member>, MemberRepository>();
+builder.Services.AddScoped<BookRepository>();
+builder.Services.AddScoped<MemberRepository>();
 
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IBorrowRecordService, BorrowRecordService>();
 
 var app = builder.Build();
 
@@ -32,29 +44,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
