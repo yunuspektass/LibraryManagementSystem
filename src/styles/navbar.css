@@ -226,3 +226,43 @@
     padding: 8px 10px;
   }
 }
+/* Bildirim ikon sarmalayıcı */
+.notification-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Zil ikonu */
+.bell-icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.nav-link:hover .bell-icon {
+  transform: rotate(-10deg) scale(1.1);
+}
+
+/* Kırmızı bildirim bublesi */
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #e63946;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
+  animation: badge-pop 0.3s ease forwards;
+}
+
+/* Yeni mesaj efekti */
+@keyframes badge-pop {
+  0% { transform: scale(0); }
+  80% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

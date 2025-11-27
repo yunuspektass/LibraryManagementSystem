@@ -6,7 +6,7 @@ import AdminPage from "./pages/AdminPage";
 import BookDetailPage from "./pages/BookDetailPage";
 import Navbar from "./components/Navbar";
 import ProfilePage from "./pages/ProfilePage";
-import NotificaionsPage from "./pages/NotificationsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
              <Route path="/admin" element={<AdminPage />} />
              <Route path="/books/:id" element={<BookDetailPage />} />
              <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/notifications" element={<NotificaionsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
       </Routes>
     </BrowserRouter>
   );

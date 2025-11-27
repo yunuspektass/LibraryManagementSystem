@@ -45,6 +45,41 @@ export default function Navbar() {
             </svg>
             <span>Kitaplar</span>
           </Link>
+          {/* Bildirimler */}
+<Link
+  to="/notifications"
+  className={`nav-link ${isActive("/notifications") ? "active" : ""}`}
+>
+  <div className="notification-wrapper">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="bell-icon"
+    >
+      <path
+        d="M18 8C18 5.23858 15.7614 3 13 3C10.2386 3 8 5.23858 8 8V11C8 12.6569 6.65685 14 5 14H21C19.3431 14 18 12.6569 18 11V8Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M13 21C14.1046 21 15 20.1046 15 19H11C11 20.1046 11.8954 21 13 21Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+
+    {/* okunmamış varsa göster ({count}) */}
+    <span className="notification-badge">3</span>
+  </div>
+
+  <span>Bildirimler</span>
+</Link>
+
 
           {role === "admin" ? (
             <Link
