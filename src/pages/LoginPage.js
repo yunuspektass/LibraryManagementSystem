@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("login"); // "login" veya "register"
+  const [activeTab, setActiveTab] = useState("login"); // "login", "register", "staff"
 
   // Giriş formu
   const [loginData, setLoginData] = useState({
@@ -22,6 +22,12 @@ export default function LoginPage() {
     confirmPassword: ""
   });
 
+  // Personel giriş formu
+  const [staffData, setStaffData] = useState({
+    staffId: "",
+    password: ""
+  });
+
   // Giriş form değişiklikleri
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +41,15 @@ export default function LoginPage() {
   const handleRegisterChange = (e) => {
     const { name, value } = e.target;
     setRegisterData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Personel form değişiklikleri
+  const handleStaffChange = (e) => {
+    const { name, value } = e.target;
+    setStaffData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -98,6 +113,22 @@ export default function LoginPage() {
     });
   };
 
+  // Personel giriş işlemi
+  const handleStaffLogin = (e) => {
+    e.preventDefault();
+
+    if (staffData.staffId && staffData.password) {
+      // Backend gelince API çağrısı yapılacak
+      localStorage.setItem("role", "personel");
+      localStorage.setItem("staffId", staffData.staffId);
+
+      alert("Personel girişi başarılı!");
+      navigate("/");
+    } else {
+      alert("Lütfen tüm alanları doldurun!");
+    }
+  };
+
   return (
     <div className="login-page">
       <div className="login-container">
@@ -111,24 +142,30 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1>Kütüphane Sistemi</h1>
-          <p>Hesabınıza giriş yapın veya yeni hesap oluşturun</p>
+         {activeTab !== "staff" && (
+  <p>Hesabınıza giriş yapın veya yeni hesap oluşturun</p>
+)}
+
         </div>
 
-        {/* Tab Navigation */}
-        <div className="tab-navigation">
-          <button
-            className={`tab-btn ${activeTab === "login" ? "active" : ""}`}
-            onClick={() => setActiveTab("login")}
-          >
-            Giriş Yap
-          </button>
-          <button
-            className={`tab-btn ${activeTab === "register" ? "active" : ""}`}
-            onClick={() => setActiveTab("register")}
-          >
-            Kayıt Ol
-          </button>
-        </div>
+       {activeTab !== "staff" && (
+  <div className="tab-navigation">
+    <button
+      className={`tab-btn ${activeTab === "login" ? "active" : ""}`}
+      onClick={() => setActiveTab("login")}
+    >
+      Giriş Yap
+    </button>
+
+    <button
+      className={`tab-btn ${activeTab === "register" ? "active" : ""}`}
+      onClick={() => setActiveTab("register")}
+    >
+      Kayıt Ol
+    </button>
+  </div>
+)}
+
 
         {/* Login Form */}
         {activeTab === "login" && (
@@ -177,6 +214,19 @@ export default function LoginPage() {
 
             <div className="login-footer">
               <p>Şifrenizi mi unuttunuz? <a href="#">Sıfırla</a></p>
+              <p style={{ marginTop: "8px" }}>
+                Personel misiniz? 
+                <a 
+                  href="#" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveTab("staff");
+                  }}
+                  style={{ marginLeft: "5px" }}
+                >
+                  Personel Girişi
+                </a>
+              </p>
             </div>
           </form>
         )}
@@ -297,6 +347,70 @@ export default function LoginPage() {
                 <path d="M23 11H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
+          </form>
+        )}
+
+        {/* Staff Login Form */}
+        {activeTab === "staff" && (
+          <form className="login-form" onSubmit={handleStaffLogin}>
+          
+            <div className="input-group">
+              <div className="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <input
+                type="text"
+                name="staffId"
+                placeholder="Personel ID"
+                value={staffData.staffId}
+                onChange={handleStaffChange}
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <div className="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Şifre"
+                value={staffData.password}
+                onChange={handleStaffChange}
+                required
+              />
+            </div>
+
+            <button type="submit" className="login-btn">
+              <span>Personel Girişi</span>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <div className="login-footer">
+              <p>
+                Kullanıcı girişine dönmek için 
+                <a 
+                  href="#" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveTab("login");
+                  }}
+                  style={{ marginLeft: "5px" }}
+                >
+                  buraya tıklayın
+                </a>
+              </p>
+            </div>
           </form>
         )}
       </div>
