@@ -73,7 +73,7 @@ export default function LoginPage() {
       alert("Lütfen tüm alanları doldurun!");
     }
   };
-
+   //deneme
   // Kayıt işlemi
   const handleRegister = (e) => {
     e.preventDefault();
@@ -145,7 +145,7 @@ export default function LoginPage() {
          {activeTab !== "staff" && (
   <p>Hesabınıza giriş yapın veya yeni hesap oluşturun</p>
 )}
-
+   
         </div>
 
        {activeTab !== "staff" && (
