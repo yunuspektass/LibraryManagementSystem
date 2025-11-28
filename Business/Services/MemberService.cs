@@ -1,5 +1,5 @@
-﻿using LibraryManagementSystem.Business.Services.Interfaces;
-using LibraryManagementSystem.Business.GenericRepository.IntRep;
+using LibraryManagementSystem.Business.GenericRepository.ConcRep;
+using LibraryManagementSystem.Business.Services.Interfaces;
 using LibraryManagementSystem.Core.Responses;
 using LibraryManagementSystem.Domain.Entities;
 
@@ -7,9 +7,9 @@ namespace LibraryManagementSystem.Business.Services;
 
 public class MemberService : IMemberService
 {
-    private readonly IMemberRepository _memberRepository;
+    private readonly MemberRepository _memberRepository;
 
-    public MemberService(IMemberRepository memberRepository)
+    public MemberService(MemberRepository memberRepository)
     {
         _memberRepository = memberRepository;
     }

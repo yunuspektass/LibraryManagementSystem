@@ -1,5 +1,5 @@
-﻿using LibraryManagementSystem.Business.Services.Interfaces;
-using LibraryManagementSystem.Business.GenericRepository.IntRep;
+using LibraryManagementSystem.Business.GenericRepository.ConcRep;
+using LibraryManagementSystem.Business.Services.Interfaces;
 using LibraryManagementSystem.Core.Responses;
 using LibraryManagementSystem.Domain.Entities;
 
@@ -7,9 +7,9 @@ namespace LibraryManagementSystem.Business.Services;
 
 public class BookService : IBookService
 {
-    private readonly IBookRepository _bookRepository;
+    private readonly BookRepository _bookRepository;
 
-    public BookService(IBookRepository bookRepository)
+    public BookService(BookRepository bookRepository)
     {
         _bookRepository = bookRepository;
     }

@@ -1,9 +1,14 @@
-﻿using LibraryManagementSystem.Business.GenericRepository.IntRep;
+﻿using System;
+using System.Linq;
+using LibraryManagementSystem.Business.GenericRepository.ConcRep;
 using LibraryManagementSystem.Business.Services;
 using LibraryManagementSystem.Business.Services.Interfaces;
 using LibraryManagementSystem.DataAccess.Context;
-using LibraryManagementSystem.DataAccess.Repositories;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,8 +21,8 @@ var connectionString = builder.Configuration.GetConnectionString("LibraryDb")
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<IBookRepository, BookRepository>();
-builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+builder.Services.AddScoped<BookRepository>(sp => new BookRepository(sp.GetRequiredService<LibraryContext>()));
+builder.Services.AddScoped<MemberRepository>(sp => new MemberRepository(sp.GetRequiredService<LibraryContext>()));
 
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();

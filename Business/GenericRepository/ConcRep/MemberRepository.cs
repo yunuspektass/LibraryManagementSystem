@@ -1,17 +1,16 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using LibraryManagementSystem.Business.GenericRepository.BaseRepo;
-using LibraryManagementSystem.Business.GenericRepository.IntRep;
-using LibraryManagementSystem.DataAccess.Context;
 using LibraryManagementSystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace LibraryManagementSystem.DataAccess.Repositories;
+namespace LibraryManagementSystem.Business.GenericRepository.ConcRep;
 
-public class MemberRepository : BaseRepository<Member>, IMemberRepository
+public class MemberRepository : BaseRepository<Member>
 {
-    public MemberRepository(LibraryContext context) : base(context)
+    public MemberRepository(DbContext context) : base(context)
     {
+        
     }
 
     public async Task<Member?> GetWithBorrowHistoryAsync(int id, CancellationToken cancellationToken = default)

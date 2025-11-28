@@ -1,18 +1,16 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using LibraryManagementSystem.Business.GenericRepository.BaseRepo;
-using LibraryManagementSystem.Business.GenericRepository.IntRep;
-using LibraryManagementSystem.DataAccess.Context;
 using LibraryManagementSystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace LibraryManagementSystem.DataAccess.Repositories;
+namespace LibraryManagementSystem.Business.GenericRepository.ConcRep;
 
-public class BookRepository : BaseRepository<Book>, IBookRepository
+public class BookRepository : BaseRepository<Book>
 {
-    public BookRepository(LibraryContext context) : base(context)
+    public BookRepository(DbContext context) : base(context)
     {
     }
 
