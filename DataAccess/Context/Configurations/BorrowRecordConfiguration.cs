@@ -21,9 +21,9 @@ public sealed class BorrowRecordConfiguration : IEntityTypeConfiguration<BorrowR
             .HasForeignKey(record => record.BookId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(record => record.Member)
-            .WithMany(member => member.BorrowRecords)
-            .HasForeignKey(record => record.MemberId)
+        builder.HasOne(record => record.User)
+            .WithMany(user => user.BorrowRecords)
+            .HasForeignKey(record => record.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

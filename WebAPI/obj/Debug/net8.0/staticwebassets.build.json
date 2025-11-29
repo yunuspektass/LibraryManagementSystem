@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "2pdrTA3ZDw1n3cleOb5j4DfxKcXHxNtfhnsc9RNMRwA=",
+  "Hash": "dVrKJuf9AIZdZf2XTiFlYbYXW+EUNHRp03CT500f0Zc=",
   "Source": "LibraryManagementSystem.WebAPI",
   "BasePath": "_content/LibraryManagementSystem.WebAPI",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }

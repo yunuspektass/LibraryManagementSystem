@@ -8,7 +8,7 @@ public class BorrowRecordGetDto
 
     public int BookId { get; init; }
 
-    public int MemberId { get; init; }
+    public int UserId { get; init; }
 
     public DateTime BorrowDate { get; init; }
 
