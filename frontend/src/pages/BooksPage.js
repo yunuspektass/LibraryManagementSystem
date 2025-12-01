@@ -3,6 +3,39 @@ import "../styles/books.css";
 import { Link } from "react-router-dom";
 import { booksAPI, categoriesAPI } from "../services/api";
 
+// Kitap başlığını dosya adına çeviren fonksiyon
+const getImageFileName = (bookTitle) => {
+  if (!bookTitle) return null;
+  
+  return bookTitle
+    .toLowerCase()
+    .trim()
+    // Türkçe karakterleri değiştir
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/İ/g, 'i')
+    .replace(/Ğ/g, 'g')
+    .replace(/Ü/g, 'u')
+    .replace(/Ş/g, 's')
+    .replace(/Ö/g, 'o')
+    .replace(/Ç/g, 'c')
+    // Özel karakterleri kaldır ve boşlukları alt çizgi yap
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+};
+
+// Kitap resminin tam yolunu döndüren fonksiyon
+const getBookImageUrl = (bookTitle) => {
+  const fileName = getImageFileName(bookTitle);
+  return fileName ? `/kitap_fotolar2/${fileName}.jpg` : null;
+};
+
 export default function BooksPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -12,6 +45,7 @@ export default function BooksPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [imageErrors, setImageErrors] = useState({});
 
   // Backend'den kitapları ve kategorileri çek
   useEffect(() => {
@@ -55,6 +89,10 @@ export default function BooksPage() {
     setAvailability("all");
     setYearRange({ from: "", to: "" });
     setSearchQuery("");
+  };
+
+  const handleImageError = (bookId) => {
+    setImageErrors(prev => ({ ...prev, [bookId]: true }));
   };
 
   const filteredBooks = books.filter(book => {
@@ -207,38 +245,62 @@ export default function BooksPage() {
         </div>
 
         <div className="books-grid">
-          {filteredBooks.map((book) => (
-            <Link to={`/books/${book.id}`} key={book.id} className="book-card-link">
-              <div className="book-card-new">
-                <div className="book-cover-image" style={{ 
-                  backgroundImage: book.coverImageUrl 
-                    ? `url(${book.coverImageUrl})` 
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                }}>
-                  {!book.coverImageUrl && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '100%',
-                      fontSize: '3rem',
-                      color: 'white',
-                      fontWeight: 'bold'
-                    }}>
-                      {book.title.charAt(0)}
+          {filteredBooks.map((book) => {
+            const imageUrl = getBookImageUrl(book.title);
+            const hasImageError = imageErrors[book.id];
+            
+            return (
+              <Link to={`/books/${book.id}`} key={book.id} className="book-card-link">
+                <div className="book-card-new">
+                  <div 
+                    className="book-cover-image" 
+                    style={{ 
+                      backgroundImage: hasImageError || !imageUrl
+                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        : `url(${imageUrl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
+                    }}
+                  >
+                    {/* Gizli img tag ile yükleme kontrolü */}
+                    {imageUrl && !hasImageError && (
+                      <img 
+                        src={imageUrl} 
+                        alt=""
+                        onError={() => handleImageError(book.id)}
+                        style={{ display: 'none' }}
+                      />
+                    )}
+                    
+                    {/* Resim yüklenemezse baş harf göster */}
+                    {(hasImageError || !imageUrl) && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        fontSize: '3rem',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase'
+                      }}>
+                        {book.title.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="book-info">
+                    <h3>{book.title}</h3>
+                    <p className="book-author">{book.authorName || 'Yazar Bilgisi Yok'}</p>
+                    <div className={`status-badge-new ${book.availableCopies > 0 ? 'available' : 'borrowed'}`}>
+                      {book.availableCopies > 0 ? `Mevcut (${book.availableCopies})` : 'Ödünç Alındı'}
                     </div>
-                  )}
-                </div>
-                <div className="book-info">
-                  <h3>{book.title}</h3>
-                  <p className="book-author">{book.authorName || 'Yazar Bilgisi Yok'}</p>
-                  <div className={`status-badge-new ${book.availableCopies > 0 ? 'available' : 'borrowed'}`}>
-                    {book.availableCopies > 0 ? `Mevcut (${book.availableCopies})` : 'Ödünç Alındı'}
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </main>
     </div>
