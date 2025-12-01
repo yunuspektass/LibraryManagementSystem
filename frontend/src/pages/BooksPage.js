@@ -1,78 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/books.css";
 import { Link } from "react-router-dom";
+import { booksAPI, categoriesAPI } from "../services/api";
 
 export default function BooksPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [availability, setAvailability] = useState("all");
   const [yearRange, setYearRange] = useState({ from: "", to: "" });
+  const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Statik örnek veri
-  const books = [
-    {
-      id: 1,
-      title: "Suç ve Ceza",
-      author: "Fyodor Dostoyevski",
-      category: "Dünya Klasikleri",
-      stock: 5,
-      year: 1866,
-      pages: 671,
-      cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 2,
-      title: "Kürk Mantolu Madonna",
-      author: "Sabahattin Ali",
-      category: "Dünya Klasikleri",
-      stock: 2,
-      year: 1943,
-      pages: 176,
-      cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 3,
-      title: "1984",
-      author: "George Orwell",
-      category: "Distopya",
-      stock: 0,
-      year: 1949,
-      pages: 328,
-      cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 4,
-      title: "Sapiens",
-      author: "Yuval Noah Harari",
-      category: "Bilim",
-      stock: 8,
-      year: 2011,
-      pages: 443,
-      cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 5,
-      title: "Nutuk",
-      author: "Mustafa Kemal Atatürk",
-      category: "Tarih",
-      stock: 12,
-      year: 1927,
-      pages: 543,
-      cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 6,
-      title: "Steve Jobs",
-      author: "Walter Isaacson",
-      category: "Biyografi",
-      stock: 3,
-      year: 2011,
-      pages: 656,
-      cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=800"
-    }
-  ];
+  // Backend'den kitapları ve kategorileri çek
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [booksData, categoriesData] = await Promise.all([
+          booksAPI.getAll(),
+          categoriesAPI.getAll()
+        ]);
+        
+        setBooks(booksData);
+        setCategories(categoriesData.map(cat => cat.name));
+      } catch (err) {
+        setError(err.message || "Veriler yüklenirken bir hata oluştu");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const categories = ["Bilim", "Biyografi", "Otobiyografi", "Çizgi Roman", "Felsefe", "Sanat", "Tarih", "Distopya", "Dünya Klasikleri"];
+    fetchData();
+  }, []);
 
   const handleCategoryChange = (category) => {
     setSelectedCategories(prev => {
@@ -97,16 +59,48 @@ export default function BooksPage() {
 
   const filteredBooks = books.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(book.category);
+      (book.authorName && book.authorName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (book.isbn && book.isbn.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = selectedCategories.length === 0 || 
+      (book.categoryName && selectedCategories.includes(book.categoryName));
     const matchesAvailability = availability === "all" ||
-      (availability === "available" && book.stock > 0) ||
-      (availability === "borrowed" && book.stock === 0);
-    const matchesYear = (!yearRange.from || book.year >= parseInt(yearRange.from)) &&
-      (!yearRange.to || book.year <= parseInt(yearRange.to));
+      (availability === "available" && book.availableCopies > 0) ||
+      (availability === "borrowed" && book.availableCopies === 0);
+    const bookYear = book.publicationYear || new Date(book.createdAt).getFullYear();
+    const matchesYear = (!yearRange.from || bookYear >= parseInt(yearRange.from)) &&
+      (!yearRange.to || bookYear <= parseInt(yearRange.to));
 
     return matchesSearch && matchesCategory && matchesAvailability && matchesYear;
   });
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '80vh',
+        fontSize: '1.5rem'
+      }}>
+        Yükleniyor...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '80vh',
+        fontSize: '1.2rem',
+        color: '#c33'
+      }}>
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="books-page-container">
@@ -216,19 +210,30 @@ export default function BooksPage() {
           {filteredBooks.map((book) => (
             <Link to={`/books/${book.id}`} key={book.id} className="book-card-link">
               <div className="book-card-new">
-                <div className="book-cover-image" style={{ backgroundImage: `url(${book.cover})` }}>
-                  {/* Fallback if image fails or for design */}
+                <div className="book-cover-image" style={{ 
+                  backgroundImage: book.coverImageUrl 
+                    ? `url(${book.coverImageUrl})` 
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                }}>
+                  {!book.coverImageUrl && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
+                      fontSize: '3rem',
+                      color: 'white',
+                      fontWeight: 'bold'
+                    }}>
+                      {book.title.charAt(0)}
+                    </div>
+                  )}
                 </div>
                 <div className="book-info">
                   <h3>{book.title}</h3>
-                  <p className="book-author">{book.author}</p>
-                  <div className="book-card-footer">
-                    <div className={`status-badge-new ${book.stock > 0 ? 'available' : 'borrowed'}`}>
-                      {book.stock > 0 ? 'Mevcut' : 'Ödünç Alındı'}
-                    </div>
-                    <div className="category-badge-new">
-                      {book.category}
-                    </div>
+                  <p className="book-author">{book.authorName || 'Yazar Bilgisi Yok'}</p>
+                  <div className={`status-badge-new ${book.availableCopies > 0 ? 'available' : 'borrowed'}`}>
+                    {book.availableCopies > 0 ? `Mevcut (${book.availableCopies})` : 'Ödünç Alındı'}
                   </div>
                 </div>
               </div>

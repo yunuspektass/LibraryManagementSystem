@@ -6,24 +6,68 @@ import AdminPage from "./pages/AdminPage";
 import BookDetailPage from "./pages/BookDetailPage";
 import Navbar from "./components/Navbar";
 import ProfilePage from "./pages/ProfilePage";
+import NotificationsPage from "./pages/NotificationsPage";
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 
 function App() {
   return (
     <BrowserRouter>
-         <Navbar />
-      <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/home" element={<HomePage />} />
-             <Route path="/books" element={<BooksPage />} />
-             <Route path="/admin" element={<AdminPage />} />
-             <Route path="/books/:id" element={<BookDetailPage />} />
-             <Route path="/profile" element={<ProfilePage />} />
-
-
-
-
-      </Routes>
+      <AuthProvider>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route 
+            path="/home" 
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/books" 
+            element={
+              <ProtectedRoute>
+                <BooksPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute requiredRole="LibraryStaff">
+                <AdminPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/books/:id" 
+            element={
+              <ProtectedRoute>
+                <BookDetailPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/notifications" 
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
