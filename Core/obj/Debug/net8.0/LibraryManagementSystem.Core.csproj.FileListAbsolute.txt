@@ -1,0 +1,13 @@
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/bin/Debug/net8.0/LibraryManagementSystem.Core.deps.json
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/bin/Debug/net8.0/LibraryManagementSystem.Core.dll
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/bin/Debug/net8.0/LibraryManagementSystem.Core.pdb
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.csproj.AssemblyReference.cache
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.GeneratedMSBuildEditorConfig.editorconfig
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.AssemblyInfoInputs.cache
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.AssemblyInfo.cs
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.csproj.CoreCompileInputs.cache
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.sourcelink.json
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.dll
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/refint/LibraryManagementSystem.Core.dll
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/LibraryManagementSystem.Core.pdb
+/Users/yunuspektas/Developer/LibraryManagementSystem/Core/obj/Debug/net8.0/ref/LibraryManagementSystem.Core.dll

@@ -1,0 +1,16 @@
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/bin/Debug/net8.0/LibraryManagementSystem.Domain.deps.json
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/bin/Debug/net8.0/LibraryManagementSystem.Domain.dll
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/bin/Debug/net8.0/LibraryManagementSystem.Domain.pdb
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/bin/Debug/net8.0/LibraryManagementSystem.Core.dll
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/bin/Debug/net8.0/LibraryManagementSystem.Core.pdb
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.csproj.AssemblyReference.cache
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.AssemblyInfoInputs.cache
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.AssemblyInfo.cs
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.csproj.CoreCompileInputs.cache
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.sourcelink.json
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryM.5555C4D1.Up2Date
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.dll
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/refint/LibraryManagementSystem.Domain.dll
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/LibraryManagementSystem.Domain.pdb
+/Users/yunuspektas/Developer/LibraryManagementSystem/Domain/obj/Debug/net8.0/ref/LibraryManagementSystem.Domain.dll
