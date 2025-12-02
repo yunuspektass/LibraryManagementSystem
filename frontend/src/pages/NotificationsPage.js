@@ -1,16 +1,30 @@
 import { useState } from "react";
 import { useNotification } from "../context/NotificationContext";
 import ConfirmModal from "../components/ConfirmModal";
+import NotificationDetailModal from "../components/NotificationDetailModal";
+import SuccessModal from "../components/SuccessModal";
 import "../styles/notifications.css";
 
 export default function NotificationsPage() {
-  const { notifications, deleteNotification } = useNotification();
+  const { notifications, deleteNotification, returnBook } = useNotification();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-  const handleDeleteClick = (id) => {
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+
+  const [isReturnConfirmOpen, setIsReturnConfirmOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+
+  const handleDeleteClick = (e, id) => {
+    e.stopPropagation();
     setSelectedId(id);
     setIsModalOpen(true);
+  };
+
+  const handleNotificationClick = (notification) => {
+    setSelectedNotification(notification);
+    setIsDetailModalOpen(true);
   };
 
   const handleConfirmDelete = () => {
@@ -19,6 +33,24 @@ export default function NotificationsPage() {
       setIsModalOpen(false);
       setSelectedId(null);
     }
+  };
+
+  const handleReturnClick = (id) => {
+    setIsReturnConfirmOpen(true);
+  };
+
+  const handleConfirmReturn = () => {
+    if (selectedNotification) {
+      returnBook(selectedNotification.id);
+      setIsReturnConfirmOpen(false);
+      setIsSuccessOpen(true);
+    }
+  };
+
+  const handleCloseSuccess = () => {
+    setIsSuccessOpen(false);
+    setIsDetailModalOpen(false);
+    setSelectedNotification(null);
   };
 
   const formatDays = (d) => {
@@ -38,10 +70,15 @@ export default function NotificationsPage() {
 
       <div className="notif-list">
         {notifications.map((b) => (
-          <div className="notif-card" key={b.id} style={{ position: 'relative' }}>
+          <div
+            className="notif-card"
+            key={b.id}
+            style={{ position: 'relative', cursor: 'pointer' }}
+            onClick={() => handleNotificationClick(b)}
+          >
 
             <button
-              onClick={() => handleDeleteClick(b.id)}
+              onClick={(e) => handleDeleteClick(e, b.id)}
               style={{
                 position: 'absolute',
                 top: '10px',
@@ -55,7 +92,8 @@ export default function NotificationsPage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '50%',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                zIndex: 10
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = '#e53e3e';
@@ -113,6 +151,31 @@ export default function NotificationsPage() {
         onConfirm={handleConfirmDelete}
         title="Bildirimi Sil"
         message="Bu bildirimi silmek istediğinize emin misiniz? Bu işlem geri alınamaz."
+      />
+
+      <NotificationDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        notification={selectedNotification}
+        onReturn={handleReturnClick}
+      />
+
+      <ConfirmModal
+        isOpen={isReturnConfirmOpen}
+        onClose={() => setIsReturnConfirmOpen(false)}
+        onConfirm={handleConfirmReturn}
+        title="İade Talebi"
+        message="İade talebi oluşturmak istiyor musunuz?"
+        confirmText="Evet, Oluştur"
+        cancelText="İptal"
+        isDanger={false}
+      />
+
+      <SuccessModal
+        isOpen={isSuccessOpen}
+        onClose={handleCloseSuccess}
+        title="Talep Alındı"
+        message="3 gün içerisinde kütüphane personeline teslim edebilirsiniz."
       />
     </div>
   );
