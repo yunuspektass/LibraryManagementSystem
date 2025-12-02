@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Business\LibraryManagementSystem.Business.csproj" />
-    <ProjectReference Include="..\Core\LibraryManagementSystem.Core.csproj" />
-    <ProjectReference Include="..\DataAccess\LibraryManagementSystem.DataAccess.csproj" />
-    <ProjectReference Include="..\Domain\LibraryManagementSystem.Domain.csproj" />
+    <ProjectReference Include="..\..\Business\LibraryManagementSystem.Business.csproj" />
+    <ProjectReference Include="..\..\Core\LibraryManagementSystem.Core.csproj" />
+    <ProjectReference Include="..\..\DataAccess\LibraryManagementSystem.DataAccess.csproj" />
+    <ProjectReference Include="..\..\Domain\LibraryManagementSystem.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

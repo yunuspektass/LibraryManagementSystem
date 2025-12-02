@@ -1,28 +1,56 @@
+/* Bildirimler Sayfası Konteyner */
+.books-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: calc(100vh - 80px);
+}
+
+.books-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.books-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #2d3748;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #4a7c59 0%, #5a9d6a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.books-header p {
+  color: #718096;
+  font-size: 1.1rem;
+}
+
 /* Bildirimler Liste */
 .notif-list {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  animation: fadeInUp 0.8s ease-out;
+  gap: 20px;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-/* Kart tasarımı → book-card ile AYNI DNA */
+/* Kart tasarımı */
 .notif-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  background: white;
+  border-radius: 16px;
   padding: 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  transition: all 0.4s ease;
-  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
 }
 
 .notif-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 50px rgba(74, 124, 89, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e0;
 }
 
 /* Sol taraf */
@@ -34,24 +62,28 @@
 
 /* Kitap kapağı */
 .notif-cover {
-  width: 70px;
-  height: 95px;
+  width: 60px;
+  height: 90px;
   object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background-color: #edf2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
 }
 
 /* Başlık & yazar */
 .notif-left h3 {
-  margin: 0;
-  font-size: 1.3rem;
+  margin: 0 0 5px 0;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #2d3748;
 }
 
 .notif-author {
   color: #718096;
-  margin-top: 5px;
+  margin: 0;
   font-size: 0.95rem;
 }
 
@@ -60,47 +92,65 @@
   text-align: right;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: flex-end;
+  gap: 8px;
 }
 
-/* Gün badge → kitap stock badge mantığıyla aynı */
+/* Gün badge */
 .notif-badge {
-  padding: 7px 14px;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
 }
 
 .notif-badge.ok {
-  background: rgba(74, 124, 89, 0.15);
-  color: #4a7c59;
+  background: #c6f6d5;
+  color: #22543d;
 }
 
 .notif-badge.warning {
-  background: rgba(214, 158, 46, 0.15);
-  color: #d69e2e;
+  background: #fefcbf;
+  color: #744210;
 }
 
 .notif-badge.late {
-  background: rgba(229, 62, 62, 0.15);
-  color: #e53e3e;
+  background: #fed7d7;
+  color: #822727;
 }
 
 /* Tarih */
 .notif-date {
-  font-size: 0.9rem;
-  color: #4a5568;
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: 500;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .notif-card {
     flex-direction: column;
+    align-items: flex-start;
     gap: 20px;
-    text-align: center;
   }
 
   .notif-right {
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
