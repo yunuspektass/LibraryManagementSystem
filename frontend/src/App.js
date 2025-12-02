@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 
@@ -15,61 +16,64 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route 
-            path="/home" 
-            element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/books" 
-            element={
-              <ProtectedRoute>
-                <BooksPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requiredRole="LibraryStaff">
-                <AdminPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/books/:id" 
-            element={
-              <ProtectedRoute>
-                <BookDetailPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/notifications" 
-            element={
-              <ProtectedRoute>
-                <NotificationsPage />
-              </ProtectedRoute>
-            } 
-          />
-        </Routes>
+        <NotificationProvider>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<LoginPage />} />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/books"
+              element={
+                <ProtectedRoute>
+                  <BooksPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requiredRole="LibraryStaff">
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/books/:id"
+              element={
+                <ProtectedRoute>
+                  <BookDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationsPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   );
 }
+
 
 export default App;
