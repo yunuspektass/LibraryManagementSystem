@@ -73,8 +73,8 @@ export default function NotificationsPage() {
           <div
             className="notif-card"
             key={b.id}
-            style={{ position: 'relative', cursor: 'pointer' }}
-            onClick={() => handleNotificationClick(b)}
+            style={{ position: 'relative', cursor: b.returnRequested ? 'default' : 'pointer' }}
+            onClick={() => !b.returnRequested && handleNotificationClick(b)}
           >
 
             <button
@@ -120,19 +120,32 @@ export default function NotificationsPage() {
             </div>
 
             <div className="notif-right" style={{ marginRight: '30px' }}>
-              <span
-                className={
-                  b.daysLeft < 0
-                    ? "notif-badge late"
-                    : b.daysLeft <= 2
-                      ? "notif-badge warning"
-                      : "notif-badge ok"
-                }
-              >
-                {formatDays(b.daysLeft)}
-              </span>
+              {b.returnRequested ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
+                  <span className="notif-badge" style={{ background: '#ebf8ff', color: '#3182ce' }}>
+                    İade Talebi Oluşturuldu
+                  </span>
+                  <span style={{ fontSize: '0.9rem', color: '#718096', fontWeight: '500' }}>
+                    3 Gün Kaldı
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <span
+                    className={
+                      b.daysLeft < 0
+                        ? "notif-badge late"
+                        : b.daysLeft <= 2
+                          ? "notif-badge warning"
+                          : "notif-badge ok"
+                    }
+                  >
+                    {formatDays(b.daysLeft)}
+                  </span>
 
-              <span className="notif-date">Teslim Tarihi: {b.dueDate}</span>
+                  <span className="notif-date">Teslim Tarihi: {b.dueDate}</span>
+                </>
+              )}
             </div>
 
           </div>

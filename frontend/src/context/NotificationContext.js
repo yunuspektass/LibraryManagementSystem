@@ -4,11 +4,12 @@ const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
     const [notifications, setNotifications] = useState([]);
+    const [borrowedBooks, setBorrowedBooks] = useState([]);
 
     // Mock verileri buraya taşıdık, böylece hem Navbar hem de Sayfa erişebilir
     useEffect(() => {
         // Gerçek uygulamada burası API'den veri çeker
-        const mockNotifications = [
+        const mockData = [
             {
                 id: 1,
                 title: "Suç ve Ceza",
@@ -42,7 +43,8 @@ export function NotificationProvider({ children }) {
             }
         ];
 
-        setNotifications(mockNotifications);
+        setNotifications(mockData);
+        setBorrowedBooks(mockData);
     }, []);
 
     const deleteNotification = (id) => {
@@ -50,14 +52,22 @@ export function NotificationProvider({ children }) {
     };
 
     const returnBook = (id) => {
-        // Gerçek uygulamada burada API çağrısı yapılır
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        // Hem bildirimlerde hem de ödünç alınanlarda durumu güncelle
+        const updateStatus = (list) => list.map((item) => {
+            if (item.id === id) {
+                return { ...item, returnRequested: true };
+            }
+            return item;
+        });
+
+        setNotifications((prev) => updateStatus(prev));
+        setBorrowedBooks((prev) => updateStatus(prev));
     };
 
     const notificationCount = notifications.length;
 
     return (
-        <NotificationContext.Provider value={{ notifications, notificationCount, deleteNotification, returnBook }}>
+        <NotificationContext.Provider value={{ notifications, borrowedBooks, notificationCount, deleteNotification, returnBook }}>
             {children}
         </NotificationContext.Provider>
     );

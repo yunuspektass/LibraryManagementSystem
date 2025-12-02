@@ -1,8 +1,12 @@
 import "../styles/profile.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useNotification } from "../context/NotificationContext";
+import ConfirmModal from "../components/ConfirmModal";
+import SuccessModal from "../components/SuccessModal";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   // Kullanıcı bilgileri state
   const [user, setUser] = useState({
     firstName: "Ahmet",
@@ -18,13 +22,15 @@ export default function ProfilePage() {
   // Form verileri için geçici state
   const [formData, setFormData] = useState({ ...user });
 
+  // Bildirim context'inden verileri al (ödünç alınan kitaplar olarak kullanacağız)
+  const { borrowedBooks, returnBook } = useNotification();
+
+  const [isReturnConfirmOpen, setIsReturnConfirmOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [selectedBookId, setSelectedBookId] = useState(null);
+
   // Kullanıcının baş harflerini al
   const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
-
-  const borrowedBooks = [
-    { id: 1, title: "Suç ve Ceza", author: "Dostoyevski", date: "10.11.2025" },
-    { id: 3, title: "1984", author: "George Orwell", date: "05.11.2025" }
-  ];
 
   // Düzenleme modunu aç
   const handleEditClick = () => {
@@ -52,6 +58,27 @@ export default function ProfilePage() {
   const handleCancel = () => {
     setFormData({ ...user });
     setIsEditing(false);
+  };
+
+  const handleReturnClick = (e, id) => {
+    e.stopPropagation();
+    setSelectedBookId(id);
+    setIsReturnConfirmOpen(true);
+  };
+
+  const handleConfirmReturn = () => {
+    if (selectedBookId) {
+      returnBook(selectedBookId);
+      setIsReturnConfirmOpen(false);
+      setIsSuccessOpen(true);
+      setSelectedBookId(null);
+    }
+  };
+
+  const handleCardClick = (id, returnRequested) => {
+    if (!returnRequested) {
+      navigate(`/books/${id}`);
+    }
   };
 
   return (
@@ -142,19 +169,49 @@ export default function ProfilePage() {
       ) : (
         <div className="borrowed-list">
           {borrowedBooks.map((book) => (
-            <div key={book.id} className="borrowed-card">
+            <div
+              key={book.id}
+              className="borrowed-card"
+              onClick={() => handleCardClick(book.id, book.returnRequested)}
+              style={{ cursor: book.returnRequested ? 'default' : 'pointer' }}
+            >
               <h3>{book.title}</h3>
               <p><strong>Yazar:</strong> {book.author}</p>
-              <p><strong>Alınma Tarihi:</strong> {book.date}</p>
+              <p><strong>Alınma Tarihi:</strong> {book.borrowDate}</p>
+              <p><strong>Son Teslim:</strong> {book.dueDate}</p>
 
               <div className="profile-btn-group">
-                <Link className="detail-btn" to={`/books/${book.id}`}>Detay</Link>
-                <button className="profile-return-btn">İade Et</button>
+                <button
+                  className="profile-return-btn"
+                  onClick={(e) => handleReturnClick(e, book.id)}
+                  disabled={book.returnRequested}
+                  style={book.returnRequested ? { background: '#cbd5e0', cursor: 'default' } : {}}
+                >
+                  {book.returnRequested ? 'Talep Alındı' : 'İade Et'}
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={isReturnConfirmOpen}
+        onClose={() => setIsReturnConfirmOpen(false)}
+        onConfirm={handleConfirmReturn}
+        title="İade Talebi"
+        message="İade talebi oluşturmak istiyor musunuz?"
+        confirmText="Evet, Oluştur"
+        cancelText="İptal"
+        isDanger={false}
+      />
+
+      <SuccessModal
+        isOpen={isSuccessOpen}
+        onClose={() => setIsSuccessOpen(false)}
+        title="Talep Alındı"
+        message="3 gün içerisinde kütüphane personeline teslim edebilirsiniz."
+      />
     </div>
   );
 }
