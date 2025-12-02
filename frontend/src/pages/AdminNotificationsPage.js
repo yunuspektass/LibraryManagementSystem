@@ -1,47 +1,44 @@
 import { useEffect, useState } from "react";
 import "../styles/adminNotifications.css";
+import { borrowRecordsAPI } from "../services/api";
 
 export default function AdminNotifications() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    setTimeout(() => {
-      setRequests([
-        {
-          id: 1,
-          bookTitle: "Suç ve Ceza",
-          type: "borrow",
-          date: "2025-12-02",
-          user: {
-            firstName: "Ali",
-            lastName: "Koç",
-            username: "alikoc34",
-          },
-        },
-        {
-          id: 2,
-          bookTitle: "Kürk Mantolu Madonna",
-          type: "return",
-          date: "2025-12-01",
-          user: {
-            firstName: "Zeynep",
-            lastName: "Demir",
-            username: "zdemirr",
-          },
-        },
-      ]);
-
-      setLoading(false);
-    }, 600);
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await borrowRecordsAPI.getAll();
+        const onlyReturns = (data || []).filter((r) => r.returnRequested && !r.isReturned);
+        setRequests(onlyReturns);
+      } catch (err) {
+        setError(err.message || "Bildirimler alınamadı");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
-  const handleApprove = (id) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+  const handleApprove = async (id) => {
+    try {
+      await borrowRecordsAPI.approveReturn(id);
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      setError(err.message || "Onay sırasında hata oluştu");
+    }
   };
 
-  const handleReject = (id) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+  const handleReject = async (id) => {
+    try {
+      await borrowRecordsAPI.rejectReturn(id);
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      setError(err.message || "Reddetme sırasında hata oluştu");
+    }
   };
 
   if (loading) {
@@ -55,9 +52,15 @@ export default function AdminNotifications() {
       <div className="admin-header">
         <div>
           <h1>Yönetici Bildirimleri</h1>
-          <p>Ödünç alma ve iade taleplerini buradan yönetin.</p>
+          <p>İade taleplerini buradan yönetin.</p>
         </div>
       </div>
+
+      {error && (
+        <div style={{ background: "#fee", color: "#c53030", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>
+          {error}
+        </div>
+      )}
 
       {/* Empty State */}
       {requests.length === 0 ? (
@@ -66,37 +69,29 @@ export default function AdminNotifications() {
             src="https://cdn-icons-png.flaticon.com/512/4076/4076505.png"
             alt=""
           />
-          <h3>Yeni bildirim yok</h3>
+          <h3>Yeni iade talebi yok</h3>
           <p>Öğrencilerden gelecek talepler burada görünecek.</p>
         </div>
       ) : (
         <div className="notifications-grid">
           {requests.map((req) => (
             <div className="notif-card" key={req.id}>
-              <div className="notif-icon">
-                {req.type === "borrow" ? "📘" : "🔄"}
-              </div>
+              <div className="notif-icon">🔄</div>
 
               <div className="notif-content">
-                <h3>{req.bookTitle}</h3>
+                <h3>İade Talebi</h3>
 
                 <p className="fullname">
-                  {req.user.firstName} {req.user.lastName}
+                  Kullanıcı #{req.userId}
                 </p>
 
-                <p className="username">@{req.user.username}</p>
+                <p className="username">Kitap ID: {req.bookId}</p>
 
-                <span
-                  className={
-                    req.type === "borrow"
-                      ? "badge-status borrow"
-                      : "badge-status return"
-                  }
-                >
-                  {req.type === "borrow" ? "Ödünç Alma" : "İade Talebi"}
+                <span className="badge-status return">
+                  İade Talebi
                 </span>
 
-                <p className="date">📅 {req.date}</p>
+                <p className="date">📅 {new Date(req.borrowDate).toLocaleDateString()}</p>
               </div>
 
               <div className="notif-actions">

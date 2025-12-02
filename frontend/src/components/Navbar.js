@@ -14,8 +14,8 @@ export default function Navbar() {
     return location.pathname === path;
   };
 
-  // Login sayfasındaysa navbar gösterme
-  if (location.pathname === "/") {
+  // Login/landing veya oturum yoksa navbar gösterme
+  if (!user || location.pathname === "/" || location.pathname === "/login") {
     return null;
   }
 

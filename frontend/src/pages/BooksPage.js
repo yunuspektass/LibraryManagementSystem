@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "../styles/books.css";
 import { Link } from "react-router-dom";
 import { booksAPI, categoriesAPI } from "../services/api";
@@ -47,18 +47,24 @@ export default function BooksPage() {
   const [error, setError] = useState("");
   const [imageErrors, setImageErrors] = useState({});
 
-  // Backend'den kitapları ve kategorileri çek
+  // Kategori ve kitapları filtrelere göre çek
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const [booksData, categoriesData] = await Promise.all([
-          booksAPI.getAll(),
+          booksAPI.getAll({
+            search: searchQuery,
+            availability,
+            categories: selectedCategories,
+            yearFrom: yearRange.from || undefined,
+            yearTo: yearRange.to || undefined,
+          }),
           categoriesAPI.getAll()
         ]);
         
         setBooks(booksData);
-        setCategories(categoriesData.map(cat => cat.name));
+        setCategories(categoriesData || []);
       } catch (err) {
         setError(err.message || "Veriler yüklenirken bir hata oluştu");
         console.error("Error fetching data:", err);
@@ -68,14 +74,14 @@ export default function BooksPage() {
     };
 
     fetchData();
-  }, []);
+  }, [searchQuery, availability, selectedCategories, yearRange.from, yearRange.to]);
 
-  const handleCategoryChange = (category) => {
+  const handleCategoryChange = (categoryId) => {
     setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
+      if (prev.includes(categoryId)) {
+        return prev.filter(c => c !== categoryId);
       } else {
-        return [...prev, category];
+        return [...prev, categoryId];
       }
     });
   };
@@ -100,11 +106,11 @@ export default function BooksPage() {
       (book.authorName && book.authorName.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (book.isbn && book.isbn.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedCategories.length === 0 || 
-      (book.categoryName && selectedCategories.includes(book.categoryName));
+      (book.categoryName && categories.some(c => selectedCategories.includes(c.id) && c.name === book.categoryName));
     const matchesAvailability = availability === "all" ||
       (availability === "available" && book.availableCopies > 0) ||
       (availability === "borrowed" && book.availableCopies === 0);
-    const bookYear = book.publicationYear || new Date(book.createdAt).getFullYear();
+    const bookYear = book.publicationYear || (book.publishDate ? new Date(book.publishDate).getFullYear() : new Date(book.createdAt).getFullYear());
     const matchesYear = (!yearRange.from || bookYear >= parseInt(yearRange.from)) &&
       (!yearRange.to || bookYear <= parseInt(yearRange.to));
 
@@ -148,13 +154,13 @@ export default function BooksPage() {
           <h3>Kategori</h3>
           <div className="checkbox-group">
             {categories.map(category => (
-              <label key={category} className="checkbox-label">
+              <label key={category.id} className="checkbox-label">
                 <input
                   type="checkbox"
-                  checked={selectedCategories.includes(category)}
-                  onChange={() => handleCategoryChange(category)}
+                  checked={selectedCategories.includes(category.id)}
+                  onChange={() => handleCategoryChange(category.id)}
                 />
-                <span>{category}</span>
+                <span>{category.name}</span>
               </label>
             ))}
           </div>

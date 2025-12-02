@@ -10,9 +10,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Sayfa yüklendiğinde kullanıcı bilgilerini kontrol et
     const checkAuth = () => {
-      if (authAPI.isAuthenticated()) {
-        const currentUser = authAPI.getCurrentUser();
+      if (!authAPI.isAuthenticated()) {
+        setLoading(false);
+        return;
+      }
+
+      const currentUser = authAPI.getCurrentUser();
+      if (currentUser) {
         setUser(currentUser);
+      } else {
+        // Token varsa ama kullanıcı bilgisi yoksa temizle
+        authAPI.logout();
       }
       setLoading(false);
     };
@@ -79,4 +87,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

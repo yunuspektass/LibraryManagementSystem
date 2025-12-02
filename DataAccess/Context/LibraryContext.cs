@@ -18,6 +18,8 @@ public class LibraryContext : IdentityDbContext<User, IdentityRole<int>, int>
     public DbSet<Author> Authors => Set<Author>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<BorrowRecord> BorrowRecords => Set<BorrowRecord>();
+    public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,6 +44,20 @@ public class LibraryContext : IdentityDbContext<User, IdentityRole<int>, int>
 
             builder.Property(x => x.CorrelationId)
                 .HasMaxLength(DefaultStringLength);
+        });
+
+        modelBuilder.Entity<Announcement>(builder =>
+        {
+            builder.Property(a => a.Title).IsRequired().HasMaxLength(200);
+            builder.Property(a => a.Content).IsRequired();
+            builder.Property(a => a.PublishedBy).HasMaxLength(DefaultStringLength);
+        });
+
+        modelBuilder.Entity<Notification>(builder =>
+        {
+            builder.Property(n => n.Title).IsRequired().HasMaxLength(200);
+            builder.Property(n => n.Content).IsRequired();
+            builder.Property(n => n.CreatedAtUtc).IsRequired();
         });
     }
 }

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import BooksPage from "./pages/BooksPage";
@@ -10,9 +10,27 @@ import NotificationsPage from "./pages/NotificationsPage";
 import AdminNotificationsPage from "./pages/AdminNotificationsPage";
 import LandingPage from "./pages/LandingPage";
 
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+
+const LandingOrRedirect = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) {
+    return <Navigate to={user.role === "LibraryStaff" ? "/admin" : "/home"} replace />;
+  }
+  return <LandingPage />;
+};
+
+const LoginOrRedirect = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) {
+    return <Navigate to={user.role === "LibraryStaff" ? "/admin" : "/home"} replace />;
+  }
+  return <LoginPage />;
+};
 
 function App() {
   return (
@@ -23,11 +41,11 @@ function App() {
           <Navbar />
 
           <Routes>
-            {/* 🔹 AÇILIŞTA LANDING GÖRÜNSÜN */}
-            <Route path="/" element={<LandingPage />} />
+            {/* 🔹 AÇILIŞTA LANDING / LOGIN DEĞİLSE ROLE'E YÖNLEN */}
+            <Route path="/" element={<LandingOrRedirect />} />
 
             {/* 🔹 Login sayfası */}
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<LoginOrRedirect />} />
 
             <Route
               path="/home"

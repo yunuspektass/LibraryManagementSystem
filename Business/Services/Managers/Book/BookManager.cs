@@ -17,9 +17,16 @@ public class BookManager : IBookService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<BookListDto>> GetList(DateTime? startDate, DateTime? endDate)
+    public async Task<IEnumerable<BookListDto>> GetList(
+        DateTime? startDate,
+        DateTime? endDate,
+        string? search = null,
+        IEnumerable<int>? categoryIds = null,
+        string? availability = null,
+        int? yearFrom = null,
+        int? yearTo = null)
     {
-        var books = await _bookRepository.GetAllAsync();
+        var books = await _bookRepository.GetFilteredAsync(search, categoryIds, availability, yearFrom, yearTo);
         return _mapper.Map<IEnumerable<BookListDto>>(books);
     }
 
@@ -50,4 +57,3 @@ public class BookManager : IBookService
         return _mapper.Map<BookGetDto>(book);
     }
 }
-

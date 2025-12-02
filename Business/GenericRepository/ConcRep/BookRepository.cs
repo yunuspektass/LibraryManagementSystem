@@ -14,6 +14,57 @@ public class BookRepository : BaseRepository<Book>
     {
     }
 
+    public async Task<IReadOnlyCollection<Book>> GetFilteredAsync(
+        string? search,
+        IEnumerable<int>? categoryIds,
+        string? availability,
+        int? yearFrom,
+        int? yearTo,
+        CancellationToken cancellationToken = default)
+    {
+        var query = DbSet
+            .AsNoTracking()
+            .Include(book => book.Author)
+            .Include(book => book.Category)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var lowered = search.ToLower();
+            query = query.Where(book =>
+                book.Title.ToLower().Contains(lowered) ||
+                book.ISBN.ToLower().Contains(lowered) ||
+                (book.Author != null && (
+                    book.Author.Name.ToLower().Contains(lowered) ||
+                    book.Author.Surname.ToLower().Contains(lowered))));
+        }
+
+        if (categoryIds != null && categoryIds.Any())
+        {
+            query = query.Where(book => categoryIds.Contains(book.CategoryId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(availability))
+        {
+            if (availability.Equals("available", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(book => book.IsAvailable);
+            else if (availability.Equals("borrowed", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(book => !book.IsAvailable);
+        }
+
+        if (yearFrom.HasValue)
+        {
+            query = query.Where(book => book.PublishDate.HasValue && book.PublishDate.Value.Year >= yearFrom.Value);
+        }
+
+        if (yearTo.HasValue)
+        {
+            query = query.Where(book => book.PublishDate.HasValue && book.PublishDate.Value.Year <= yearTo.Value);
+        }
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<Book>> GetAvailableBooksAsync(CancellationToken cancellationToken = default)
     {
         var books = await DbSet.AsNoTracking()

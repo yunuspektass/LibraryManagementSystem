@@ -2,6 +2,7 @@ using AutoMapper;
 using LibraryManagementSystem.Business.Dtos.BorrowRecordDtos;
 using LibraryManagementSystem.Business.GenericRepository.ConcRep;
 using LibraryManagementSystem.Business.Services.Interfaces.BorrowRecord;
+using LibraryManagementSystem.Business.Services.Interfaces;
 using LibraryManagementSystem.Domain.Entities;
 
 namespace LibraryManagementSystem.Business.Services.Managers.BorrowRecord;
@@ -9,12 +10,16 @@ namespace LibraryManagementSystem.Business.Services.Managers.BorrowRecord;
 public class BorrowRecordManager : IBorrowRecordService
 {
     private readonly BorrowRecordRepository _borrowRecordRepository;
+    private readonly INotificationService _notificationService;
+    private readonly UserRepository _userRepository;
     private readonly IMapper _mapper;
 
-    public BorrowRecordManager(BorrowRecordRepository borrowRecordRepository, IMapper mapper)
+    public BorrowRecordManager(BorrowRecordRepository borrowRecordRepository, NotificationRepository notificationRepository, UserRepository userRepository, IMapper mapper, INotificationService notificationService)
     {
         _borrowRecordRepository = borrowRecordRepository;
+        _userRepository = userRepository;
         _mapper = mapper;
+        _notificationService = notificationService;
     }
 
     public async Task<IEnumerable<BorrowRecordListDto>> GetList(DateTime? startDate, DateTime? endDate)
@@ -49,5 +54,52 @@ public class BorrowRecordManager : IBorrowRecordService
         await _borrowRecordRepository.UpdateAsync(borrowRecord);
         return _mapper.Map<BorrowRecordGetDto>(borrowRecord);
     }
-}
 
+    public async Task RequestReturnAsync(int id, int userId)
+    {
+        var borrowRecord = await _borrowRecordRepository.GetByIdAsync(id);
+        if (borrowRecord == null || borrowRecord.UserId != userId)
+            throw new ArgumentException("Borrow record not found or user mismatch");
+
+        borrowRecord.ReturnRequested = true;
+        await _borrowRecordRepository.UpdateAsync(borrowRecord);
+
+        var staffIds = await _userRepository.GetUserIdsByRoleAsync("LibraryStaff");
+        await _notificationService.CreateForUsersAsync(
+            "İade Talebi",
+            $"Kullanıcı #{userId} kitap #{borrowRecord.BookId} için iade talebi oluşturdu.",
+            staffIds);
+    }
+
+    public async Task ApproveReturnAsync(int id)
+    {
+        var borrowRecord = await _borrowRecordRepository.GetByIdAsync(id);
+        if (borrowRecord == null)
+            throw new ArgumentException("Borrow record not found");
+
+        borrowRecord.IsReturned = true;
+        borrowRecord.ReturnDate = DateTime.UtcNow.Date;
+        borrowRecord.ReturnRequested = false;
+        await _borrowRecordRepository.UpdateAsync(borrowRecord);
+
+        await _notificationService.CreateForUserAsync(
+            "İade Talebi Onaylandı",
+            $"Kitap #{borrowRecord.BookId} iade talebiniz onaylandı.",
+            borrowRecord.UserId);
+    }
+
+    public async Task RejectReturnAsync(int id)
+    {
+        var borrowRecord = await _borrowRecordRepository.GetByIdAsync(id);
+        if (borrowRecord == null)
+            throw new ArgumentException("Borrow record not found");
+
+        borrowRecord.ReturnRequested = false;
+        await _borrowRecordRepository.UpdateAsync(borrowRecord);
+
+        await _notificationService.CreateForUserAsync(
+            "İade Talebi Reddedildi",
+            $"Kitap #{borrowRecord.BookId} iade talebiniz reddedildi.",
+            borrowRecord.UserId);
+    }
+}

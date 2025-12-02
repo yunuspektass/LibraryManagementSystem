@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { notificationsAPI } from "../services/api";
+import { authAPI } from "../services/api";
 
 const NotificationContext = createContext();
 
@@ -6,68 +8,51 @@ export function NotificationProvider({ children }) {
     const [notifications, setNotifications] = useState([]);
     const [borrowedBooks, setBorrowedBooks] = useState([]);
 
-    // Mock verileri buraya taşıdık, böylece hem Navbar hem de Sayfa erişebilir
     useEffect(() => {
-        // Gerçek uygulamada burası API'den veri çeker
-        const mockData = [
-            {
-                id: 1,
-                title: "Suç ve Ceza",
-                author: "Fyodor Dostoyevski",
-                image:
-                    "https://m.media-amazon.com/images/I/71l2wz9eEEL._AC_UF1000,1000_QL80_.jpg",
-                borrowDate: "2025-01-18",
-                dueDate: "2025-02-01",
-                daysLeft: -1
-            },
-            {
-                id: 2,
-                title: "Kürk Mantolu Madonna",
-                author: "Sabahattin Ali",
-                image:
-                    "https://m.media-amazon.com/images/I/81u1t0E+n0L._AC_UF1000,1000_QL80_.jpg",
-                borrowDate: "2025-01-20",
-                dueDate: "2025-02-03",
-                daysLeft: 3
-            },
-            // Test için 3. bir bildirim ekleyelim
-            {
-                id: 3,
-                title: "1984",
-                author: "George Orwell",
-                image:
-                    "https://m.media-amazon.com/images/I/71kxa1-0mfL._AC_UF1000,1000_QL80_.jpg",
-                borrowDate: "2025-01-22",
-                dueDate: "2025-02-05",
-                daysLeft: 5
+        const loadNotifications = async () => {
+            if (!authAPI.isAuthenticated()) return;
+            try {
+                const data = await notificationsAPI.getAll();
+                setNotifications(data || []);
+            } catch (err) {
+                console.error("Bildirimler alınamadı:", err);
             }
-        ];
-
-        setNotifications(mockData);
-        setBorrowedBooks(mockData);
+        };
+        loadNotifications();
     }, []);
 
-    const deleteNotification = (id) => {
+    const deleteNotification = async (id) => {
         setNotifications((prev) => prev.filter((n) => n.id !== id));
     };
 
+    const markAsRead = async (id) => {
+        try {
+            await notificationsAPI.markRead(id);
+            setNotifications((prev) =>
+                prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+            );
+        } catch (err) {
+            console.error("Bildirim güncellenemedi:", err);
+        }
+    };
+
     const returnBook = (id) => {
-        // Hem bildirimlerde hem de ödünç alınanlarda durumu güncelle
-        const updateStatus = (list) => list.map((item) => {
-            if (item.id === id) {
-                return { ...item, returnRequested: true };
-            }
-            return item;
-        });
+        const updateStatus = (list) =>
+            list.map((item) => {
+                if (item.id === id) {
+                    return { ...item, returnRequested: true };
+                }
+                return item;
+            });
 
         setNotifications((prev) => updateStatus(prev));
         setBorrowedBooks((prev) => updateStatus(prev));
     };
 
-    const notificationCount = notifications.length;
+    const notificationCount = notifications.filter((n) => !n.isRead).length;
 
     return (
-        <NotificationContext.Provider value={{ notifications, borrowedBooks, notificationCount, deleteNotification, returnBook }}>
+        <NotificationContext.Provider value={{ notifications, borrowedBooks, notificationCount, deleteNotification, returnBook, markAsRead }}>
             {children}
         </NotificationContext.Provider>
     );

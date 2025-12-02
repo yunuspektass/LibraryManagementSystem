@@ -10,8 +10,7 @@ public class UserGetDto
     public string Email { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public string Surname { get; init; } = string.Empty;
-    public string Phone { get; init; } = string.Empty;
+    public string? Phone { get; init; }
     public DateTime RegistrationDate { get; init; }
     public ICollection<int> BorrowRecordIds { get; init; } = new List<int>();
 }
-

@@ -1,14 +1,21 @@
 import "../styles/login.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
-  const [activeTab, setActiveTab] = useState("login"); // "login", "register", "staff"
-  const [loading, setLoading] = useState(false);
+  const { login, register, user, loading: authLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState("login"); // "login", "register"
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      navigate(user.role === "LibraryStaff" ? "/admin" : "/home", { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   // Giriş formu
   const [loginData, setLoginData] = useState({
@@ -24,12 +31,6 @@ export default function LoginPage() {
     email: "",
     password: "",
     confirmPassword: ""
-  });
-
-  // Personel giriş formu
-  const [staffData, setStaffData] = useState({
-    staffId: "",
-    password: ""
   });
 
   // Giriş form değişiklikleri
@@ -50,15 +51,6 @@ export default function LoginPage() {
     }));
   };
 
-  // Personel form değişiklikleri
-  const handleStaffChange = (e) => {
-    const { name, value } = e.target;
-    setStaffData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   // Giriş işlemi
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -69,7 +61,7 @@ export default function LoginPage() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
       const result = await login(loginData.usernameOrEmail, loginData.password);
       
@@ -86,7 +78,7 @@ export default function LoginPage() {
     } catch (err) {
       setError(err.message || "Bir hata oluştu!");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
    //deneme
@@ -121,7 +113,7 @@ export default function LoginPage() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
       const result = await register({
         firstName: registerData.firstName,
@@ -140,38 +132,7 @@ export default function LoginPage() {
     } catch (err) {
       setError(err.message || "Bir hata oluştu!");
     } finally {
-      setLoading(false);
-    }
-  };
-
-  // Personel giriş işlemi
-  const handleStaffLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    if (!staffData.staffId || !staffData.password) {
-      setError("Lütfen tüm alanları doldurun!");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Personel girişi de normal login ile yapılır
-      const result = await login(staffData.staffId, staffData.password);
-      
-      if (result.success) {
-        if (result.user.role === "LibraryStaff") {
-          navigate("/admin");
-        } else {
-          setError("Bu hesap personel hesabı değil!");
-        }
-      } else {
-        setError(result.message || "Personel girişi başarısız!");
-      }
-    } catch (err) {
-      setError(err.message || "Bir hata oluştu!");
-    } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -188,9 +149,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1>Kütüphane Sistemi</h1>
-         {activeTab !== "staff" && (
-  <p>Hesabınıza giriş yapın veya yeni hesap oluşturun</p>
-)}
+          <p>Hesabınıza giriş yapın veya yeni hesap oluşturun</p>
           {error && (
             <div style={{
               backgroundColor: '#fee',
@@ -206,7 +165,6 @@ export default function LoginPage() {
           )}
         </div>
 
-       {activeTab !== "staff" && (
   <div className="tab-navigation">
     <button
       className={`tab-btn ${activeTab === "login" ? "active" : ""}`}
@@ -222,7 +180,6 @@ export default function LoginPage() {
       Kayıt Ol
     </button>
   </div>
-)}
 
 
         {/* Login Form */}
@@ -262,8 +219,8 @@ export default function LoginPage() {
               />
             </div>
 
-            <button type="submit" className="login-btn" disabled={loading}>
-              <span>{loading ? "Giriş yapılıyor..." : "Giriş Yap"}</span>
+            <button type="submit" className="login-btn" disabled={submitting}>
+              <span>{submitting ? "Giriş yapılıyor..." : "Giriş Yap"}</span>
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -271,19 +228,15 @@ export default function LoginPage() {
             </button>
 
             <div className="login-footer">
-              <p>Şifrenizi mi unuttunuz? <a href="#">Sıfırla</a></p>
-              <p style={{ marginTop: "8px" }}>
-                Personel misiniz? 
-                <a 
-                  href="#" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActiveTab("staff");
-                  }}
-                  style={{ marginLeft: "5px" }}
+              <p>
+                Şifrenizi mi unuttunuz?{" "}
+                <button
+                  type="button"
+                  className="link-like"
+                  style={{ border: "none", background: "transparent", color: "#2f855a", cursor: "pointer" }}
                 >
-                  Personel Girişi
-                </a>
+                  Sıfırla
+                </button>
               </p>
             </div>
           </form>
@@ -396,8 +349,8 @@ export default function LoginPage() {
               />
             </div>
 
-            <button type="submit" className="login-btn" disabled={loading}>
-              <span>{loading ? "Kayıt yapılıyor..." : "Kayıt Ol"}</span>
+            <button type="submit" className="login-btn" disabled={submitting}>
+              <span>{submitting ? "Kayıt yapılıyor..." : "Kayıt Ol"}</span>
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M8.5 11C10.7091 11 12.5 9.20914 12.5 7C12.5 4.79086 10.7091 3 8.5 3C6.29086 3 4.5 4.79086 4.5 7C4.5 9.20914 6.29086 11 8.5 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -408,69 +361,6 @@ export default function LoginPage() {
           </form>
         )}
 
-        {/* Staff Login Form */}
-        {activeTab === "staff" && (
-          <form className="login-form" onSubmit={handleStaffLogin}>
-          
-            <div className="input-group">
-              <div className="input-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M16 21V5C16 4.46957 15.7893 3.96086 15.4142 3.58579C15.0391 3.21071 14.5304 3 14 3H10C9.46957 3 8.96086 3.21071 8.58579 3.58579C8.21071 3.96086 8 4.46957 8 5V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <input
-                type="text"
-                name="staffId"
-                placeholder="Personel ID"
-                value={staffData.staffId}
-                onChange={handleStaffChange}
-                required
-              />
-            </div>
-
-            <div className="input-group">
-              <div className="input-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <input
-                type="password"
-                name="password"
-                placeholder="Şifre"
-                value={staffData.password}
-                onChange={handleStaffChange}
-                required
-              />
-            </div>
-
-            <button type="submit" className="login-btn" disabled={loading}>
-              <span>{loading ? "Giriş yapılıyor..." : "Personel Girişi"}</span>
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            <div className="login-footer">
-              <p>
-                Kullanıcı girişine dönmek için 
-                <a 
-                  href="#" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActiveTab("login");
-                  }}
-                  style={{ marginLeft: "5px" }}
-                >
-                  buraya tıklayın
-                </a>
-              </p>
-            </div>
-          </form>
-        )}
       </div>
 
       <div className="login-decoration">

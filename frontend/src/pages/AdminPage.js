@@ -1,12 +1,13 @@
 import "../styles/admin.css";
 import { useState, useEffect } from "react";
-import { booksAPI, authorsAPI, categoriesAPI } from "../services/api";
+import { booksAPI, authorsAPI, categoriesAPI, announcementsAPI } from "../services/api";
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState("books"); // "books", "authors", "categories"
+  const [activeTab, setActiveTab] = useState("books"); // "books", "authors", "categories", "announcements"
   const [books, setBooks] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,6 +32,11 @@ export default function AdminPage() {
     description: "",
   });
 
+  const [announcementForm, setAnnouncementForm] = useState({
+    title: "",
+    content: "",
+  });
+
   // Verileri yükle
   useEffect(() => {
     fetchAllData();
@@ -39,14 +45,16 @@ export default function AdminPage() {
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      const [booksData, authorsData, categoriesData] = await Promise.all([
+      const [booksData, authorsData, categoriesData, announcementsData] = await Promise.all([
         booksAPI.getAll(),
         authorsAPI.getAll(),
         categoriesAPI.getAll(),
+        announcementsAPI.getAll(),
       ]);
       setBooks(booksData);
       setAuthors(authorsData);
       setCategories(categoriesData);
+      setAnnouncements(announcementsData);
     } catch (err) {
       setError(err.message || "Veriler yüklenirken bir hata oluştu");
     } finally {
@@ -147,6 +155,33 @@ export default function AdminPage() {
     }
   };
 
+  const handleAnnouncementChange = (e) => {
+    setAnnouncementForm({ ...announcementForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAddAnnouncement = async () => {
+    if (!announcementForm.title.trim() || !announcementForm.content.trim()) {
+      setError("Lütfen başlık ve içerik girin");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      const created = await announcementsAPI.create({
+        title: announcementForm.title,
+        content: announcementForm.content,
+      });
+      setAnnouncements([created, ...announcements]);
+      setAnnouncementForm({ title: "", content: "" });
+      alert("Duyuru yayınlandı ve bildirimler gönderildi!");
+    } catch (err) {
+      setError(err.message || "Duyuru eklenirken bir hata oluştu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && books.length === 0) {
     return (
       <div style={{
@@ -183,6 +218,12 @@ export default function AdminPage() {
             onClick={() => setActiveTab("categories")}
           >
             Kategoriler
+          </button>
+          <button 
+            className={`tab-button ${activeTab === "announcements" ? "active" : ""}`}
+            onClick={() => setActiveTab("announcements")}
+          >
+            Duyurular
           </button>
         </div>
       </div>
@@ -396,6 +437,54 @@ export default function AdminPage() {
               </ul>
             </div>
           </>
+        )}
+
+        {/* Duyuru Yönetimi */}
+        {activeTab === "announcements" && (
+          <div className="admin-section">
+            <h2>Duyuru Yayınla</h2>
+            <div className="form-grid">
+              <div>
+                <label>Başlık</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={announcementForm.title}
+                  onChange={handleAnnouncementChange}
+                />
+              </div>
+              <div>
+                <label>İçerik</label>
+                <textarea
+                  name="content"
+                  rows="4"
+                  value={announcementForm.content}
+                  onChange={handleAnnouncementChange}
+                />
+              </div>
+            </div>
+            <button className="add-button" onClick={handleAddAnnouncement} disabled={loading}>
+              {loading ? "Kaydediliyor..." : "Duyuruyu Yayınla"}
+            </button>
+
+            <h3 style={{ marginTop: "24px" }}>Yayınlanan Duyurular</h3>
+            <div className="admin-list">
+              {announcements.map((a) => (
+                <div key={a.id} className="admin-item">
+                  <div>
+                    <strong>{a.title}</strong>
+                    <p style={{ color: "#4a5568", marginTop: "6px" }}>{a.content}</p>
+                    <small style={{ color: "#718096" }}>
+                      {a.publishedAt ? new Date(a.publishedAt).toLocaleString() : ""}
+                    </small>
+                  </div>
+                </div>
+              ))}
+              {announcements.length === 0 && (
+                <p>Henüz duyuru yok.</p>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>

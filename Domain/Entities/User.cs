@@ -9,10 +9,9 @@ public class User : IdentityUser<int>
     
     public string Name { get; set; } = string.Empty;
     public string Surname { get; set; } = string.Empty;
-    public string Phone { get; set; } = string.Empty;
+    public string? Phone { get; set; }
     public DateTime RegistrationDate { get; set; }
     
     // İlişkiler
     public ICollection<BorrowRecord> BorrowRecords { get; set; } = new HashSet<BorrowRecord>();
 }
-

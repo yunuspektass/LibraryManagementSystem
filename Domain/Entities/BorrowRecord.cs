@@ -9,6 +9,7 @@ public class BorrowRecord : BaseEntity
     public DateTime BorrowDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public bool IsReturned { get; set; }
+    public bool ReturnRequested { get; set; }
 
     public Book? Book { get; set; }
     public User? User { get; set; }

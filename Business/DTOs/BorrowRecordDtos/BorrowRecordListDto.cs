@@ -10,5 +10,5 @@ public class BorrowRecordListDto
     public DateTime BorrowDate { get; init; }
     public DateTime? ReturnDate { get; init; }
     public bool IsReturned { get; init; }
+    public bool ReturnRequested { get; init; }
 }
-

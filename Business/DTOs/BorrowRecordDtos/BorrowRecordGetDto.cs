@@ -15,4 +15,5 @@ public class BorrowRecordGetDto
     public DateTime? ReturnDate { get; init; }
 
     public bool IsReturned { get; init; }
+    public bool ReturnRequested { get; init; }
 }

@@ -18,9 +18,17 @@ public class BookController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookListDto>>> GetList([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    public async Task<ActionResult<IEnumerable<BookListDto>>> GetList(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] string? search,
+        [FromQuery] string? availability,
+        [FromQuery] string? categories,
+        [FromQuery] int? yearFrom,
+        [FromQuery] int? yearTo)
     {
-        var books = await _bookService.GetList(startDate, endDate);
+        var categoryIds = ParseCategoryIds(categories);
+        var books = await _bookService.GetList(startDate, endDate, search, categoryIds, availability, yearFrom, yearTo);
         return Ok(books);
     }
 
@@ -64,5 +72,21 @@ public class BookController : ControllerBase
 
         return Ok(result);
     }
-}
 
+    private static IEnumerable<int>? ParseCategoryIds(string? categories)
+    {
+        if (string.IsNullOrWhiteSpace(categories))
+            return null;
+
+        var parts = categories.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var list = new List<int>();
+        foreach (var part in parts)
+        {
+            if (int.TryParse(part, out var id))
+            {
+                list.Add(id);
+            }
+        }
+        return list.Count > 0 ? list : null;
+    }
+}

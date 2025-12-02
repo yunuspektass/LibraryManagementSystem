@@ -11,5 +11,7 @@ public interface IBorrowRecordService
     Task<BorrowRecordGetDto> GetItem(int id);
     Task<BorrowRecordCreateDto> PostItem(BorrowRecordCreateDto borrowRecordCreateDto);
     Task<BorrowRecordGetDto?> PutItem(int id, BorrowRecordUpdateDto borrowRecordUpdateDto);
+    Task RequestReturnAsync(int id, int userId);
+    Task ApproveReturnAsync(int id);
+    Task RejectReturnAsync(int id);
 }
-

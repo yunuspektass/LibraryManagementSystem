@@ -1,77 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ChatBot from "../components/ChatBot";
 import "../styles/books.css";
 import "../styles/home.css";
+import { announcementsAPI, booksAPI } from "../services/api";
 
 export default function HomePage() {
   const [search, setSearch] = useState("");
+  const [books, setBooks] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Kitap verileri
-  const books = [
-    {
-      id: 1,
-      title: "Suç ve Ceza",
-      author: "Fyodor Dostoyevski",
-      category: "Roman",
-      stock: 5,
-      year: 1866,
-      pages: 671
-    },
-    {
-      id: 2,
-      title: "Kürk Mantolu Madonna",
-      author: "Sabahattin Ali",
-      category: "Roman",
-      stock: 2,
-      year: 1943,
-      pages: 176
-    },
-    {
-      id: 3,
-      title: "1984",
-      author: "George Orwell",
-      category: "Distopya",
-      stock: 0,
-      year: 1949,
-      pages: 328
-    }
-  ];
-
-  // Duyurular
-  const announcements = [
-    {
-      id: 1,
-      title: "Yeni Kitaplar Eklendi!",
-      description: "Bu hafta koleksiyonumuza 15 yeni kitap eklendi. Hemen göz atın!",
-      date: "2 Aralık 2024",
-      type: "info"
-    },
-    {
-      id: 2,
-      title: "Kütüphane Bakım Çalışması",
-      description: "15 Aralık tarihinde kütüphanemiz bakım nedeniyle kapalı olacaktır.",
-      date: "1 Aralık 2024",
-      type: "warning"
-    },
-    {
-      id: 3,
-      title: "Okuma Kulübü Toplantısı",
-      description: "Bu ayın kitabı 'Suç ve Ceza'. Toplantı 10 Aralık Salı günü saat 18:00'de.",
-      date: "28 Kasım 2024",
-      type: "success"
-    }
-  ];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const [bookData, annData] = await Promise.all([
+          booksAPI.getAll(),
+          announcementsAPI.getAll(),
+        ]);
+        setBooks(bookData || []);
+        setAnnouncements(annData || []);
+      } catch (err) {
+        console.error("Home data load error:", err);
+        setBooks((prev) => prev || []);
+        setAnnouncements((prev) => prev || []);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const filtered = books.filter(
     (b) =>
-      b.title.toLowerCase().includes(search.toLowerCase()) ||
-      b.author.toLowerCase().includes(search.toLowerCase())
+      (b.title || "").toLowerCase().includes(search.toLowerCase()) ||
+      (b.authorName || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "70vh" }}>
+        Yükleniyor...
+      </div>
+    );
+  }
 
   return (
     <div className="home-container">
-
       {/* HEADER */}
       <div className="home-header">
         <h1>Kitap Ara</h1>
@@ -108,8 +84,8 @@ export default function HomePage() {
                   <span>{book.pages} sayfa</span>
                 </div>
 
-                <div className={`status-badge-new ${book.stock > 0 ? "available" : "borrowed"}`}>
-                  {book.stock > 0 ? `Mevcut (${book.stock})` : "Stokta Yok"}
+                <div className={`status-badge-new ${book.isAvailable ? "available" : "borrowed"}`}>
+                  {book.isAvailable ? "Mevcut" : "Ödünçte"}
                 </div>
               </div>
 
@@ -123,39 +99,25 @@ export default function HomePage() {
         <h2 className="ann-title">📢 Duyurular</h2>
 
         <div className="ann-grid">
-          {announcements.map((announcement) => (
-            <div key={announcement.id} className="ann-card">
-
-              {/* Etiket */}
-              <div
-                className={`ann-badge ${
-                  announcement.type === "info"
-                    ? "ann-info"
-                    : announcement.type === "warning"
-                    ? "ann-warning"
-                    : "ann-success"
-                }`}
-              >
-                {announcement.type === "info" && "📘 Bilgi"}
-                {announcement.type === "warning" && "⚠️ Uyarı"}
-                {announcement.type === "success" && "✅ Etkinlik"}
+          {announcements.length === 0 ? (
+            <p>Henüz duyuru yok.</p>
+          ) : (
+            announcements.map((announcement) => (
+              <div key={announcement.id} className="ann-card">
+                <h3>{announcement.title}</h3>
+                <p className="ann-desc">{announcement.content}</p>
+                <div className="ann-date">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z"
+                      stroke="currentColor" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                  </svg>
+                  {new Date(announcement.publishedAt).toLocaleString()}
+                </div>
               </div>
-
-              <h3>{announcement.title}</h3>
-              <p className="ann-desc">{announcement.description}</p>
-
-              <div className="ann-date">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z"
-                    stroke="currentColor" strokeWidth="2"
-                    strokeLinecap="round" strokeLinejoin="round"
-                  />
-                </svg>
-                {announcement.date}
-              </div>
-
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

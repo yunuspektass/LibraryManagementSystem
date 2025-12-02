@@ -65,6 +65,9 @@ const apiRequest = async (endpoint, options = {}) => {
     return data;
   } catch (error) {
     console.error('API Request Error:', error);
+    if (error instanceof TypeError || error.message === 'Failed to fetch') {
+      throw new Error('Sunucuya ulaşılamadı. API adresini ve bağlantınızı kontrol edin.');
+    }
     throw error;
   }
 };
@@ -113,6 +116,9 @@ export const authAPI = {
       // Kullanıcı bilgilerini de kaydet
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
+        if (response.user.role) {
+          localStorage.setItem('role', response.user.role);
+        }
       }
     }
 
@@ -134,6 +140,9 @@ export const authAPI = {
       }
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
+        if (response.user.role) {
+          localStorage.setItem('role', response.user.role);
+        }
       }
     }
 
@@ -169,13 +178,19 @@ export const authAPI = {
 // Books API
 export const booksAPI = {
   // Tüm kitapları listele
-  getAll: async (startDate = null, endDate = null) => {
+  getAll: async (filters = {}) => {
     let endpoint = '/Book';
     const params = new URLSearchParams();
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
-    if (params.toString()) endpoint += `?${params.toString()}`;
-    
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.search) params.append('search', filters.search);
+    if (filters.availability && filters.availability !== 'all') params.append('availability', filters.availability);
+    if (filters.categories && filters.categories.length > 0) params.append('categories', filters.categories.join(','));
+    if (filters.yearFrom) params.append('yearFrom', filters.yearFrom);
+    if (filters.yearTo) params.append('yearTo', filters.yearTo);
+    const qs = params.toString();
+    if (qs) endpoint += `?${qs}`;
+
     return await apiRequest(endpoint);
   },
 
@@ -304,6 +319,24 @@ export const borrowRecordsAPI = {
       body: JSON.stringify(borrowData),
     });
   },
+  requestReturn: async (id) => {
+    return await apiRequest(`/BorrowRecord/${id}/request-return`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+  },
+  approveReturn: async (id) => {
+    return await apiRequest(`/BorrowRecord/${id}/approve-return`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+  },
+  rejectReturn: async (id) => {
+    return await apiRequest(`/BorrowRecord/${id}/reject-return`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+  },
 };
 
 // Users API
@@ -334,9 +367,13 @@ export const usersAPI = {
 
   // Kullanıcı güncelle
   update: async (id, userData) => {
+    const payload = {
+      ...userData,
+      phone: userData.phone && userData.phone.trim().length > 0 ? userData.phone : null
+    };
     return await apiRequest(`/User/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(userData),
+      body: JSON.stringify(payload),
     });
   },
 };
@@ -352,6 +389,32 @@ export const chatBotAPI = {
   },
 };
 
+// Announcements API
+export const announcementsAPI = {
+  getAll: async () => {
+    return await apiRequest('/Announcement');
+  },
+  create: async (data) => {
+    return await apiRequest('/Announcement', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+};
+
+// Notifications API
+export const notificationsAPI = {
+  getAll: async () => {
+    return await apiRequest('/Notification');
+  },
+  markRead: async (id) => {
+    return await apiRequest(`/Notification/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isRead: true })
+    });
+  }
+};
+
 export default {
   authAPI,
   booksAPI,
@@ -360,5 +423,6 @@ export default {
   borrowRecordsAPI,
   usersAPI,
   chatBotAPI,
+  announcementsAPI,
+  notificationsAPI,
 };
-

@@ -64,5 +64,30 @@ public class BorrowRecordController : ControllerBase
 
         return Ok(result);
     }
-}
 
+    [HttpPost("{id:int}/request-return")]
+    public async Task<IActionResult> RequestReturn(int id)
+    {
+        if (!int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var userId))
+            return Unauthorized();
+
+        await _borrowRecordService.RequestReturnAsync(id, userId);
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/approve-return")]
+    [Authorize(Policy = "LibraryStaffPolicy")]
+    public async Task<IActionResult> ApproveReturn(int id)
+    {
+        await _borrowRecordService.ApproveReturnAsync(id);
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/reject-return")]
+    [Authorize(Policy = "LibraryStaffPolicy")]
+    public async Task<IActionResult> RejectReturn(int id)
+    {
+        await _borrowRecordService.RejectReturnAsync(id);
+        return NoContent();
+    }
+}

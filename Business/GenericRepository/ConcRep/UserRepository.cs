@@ -39,5 +39,27 @@ public class UserRepository
             .ThenInclude(record => record.Book)
             .FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
     }
-}
 
+    public async Task<List<int>> GetAllUserIdsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .Select(u => u.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<int>> GetUserIdsByRoleAsync(string roleName, CancellationToken cancellationToken = default)
+    {
+        var role = await _context.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Name == roleName, cancellationToken);
+        if (role == null)
+            return new List<int>();
+
+        var userIds = await _context.UserRoles
+            .AsNoTracking()
+            .Where(ur => ur.RoleId == role.Id)
+            .Select(ur => ur.UserId)
+            .ToListAsync(cancellationToken);
+
+        return userIds;
+    }
+}

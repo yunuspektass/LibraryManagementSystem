@@ -1,30 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNotification } from "../context/NotificationContext";
+import { borrowRecordsAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import ConfirmModal from "../components/ConfirmModal";
-import NotificationDetailModal from "../components/NotificationDetailModal";
-import SuccessModal from "../components/SuccessModal";
 import "../styles/notifications.css";
 
 export default function NotificationsPage() {
-  const { notifications, deleteNotification, returnBook } = useNotification();
+  const { notifications, deleteNotification, markAsRead } = useNotification();
+  const { user } = useAuth();
+  const [borrowRecords, setBorrowRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedNotification, setSelectedNotification] = useState(null);
-
-  const [isReturnConfirmOpen, setIsReturnConfirmOpen] = useState(false);
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      try {
+        setLoading(true);
+        const data = await borrowRecordsAPI.getAll();
+        const mine = (data || []).filter(
+          (r) => r.userId === user.id && !r.isReturned
+        );
+        setBorrowRecords(mine);
+      } catch (err) {
+        setError(err.message || "Kayıtlar yüklenemedi");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [user]);
 
   const handleDeleteClick = (e, id) => {
     e.stopPropagation();
     setSelectedId(id);
     setIsModalOpen(true);
-  };
-
-  const handleNotificationClick = (notification) => {
-    setSelectedNotification(notification);
-    setIsDetailModalOpen(true);
   };
 
   const handleConfirmDelete = () => {
@@ -35,117 +47,138 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleReturnClick = (id) => {
-    setIsReturnConfirmOpen(true);
-  };
-
-  const handleConfirmReturn = () => {
-    if (selectedNotification) {
-      returnBook(selectedNotification.id);
-      setIsReturnConfirmOpen(false);
-      setIsSuccessOpen(true);
+  const handleRequestReturn = async (id) => {
+    try {
+      await borrowRecordsAPI.requestReturn(id);
+      setBorrowRecords((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, returnRequested: true } : r))
+      );
+    } catch (err) {
+      setError(err.message || "İade talebi oluşturulamadı");
     }
-  };
-
-  const handleCloseSuccess = () => {
-    setIsSuccessOpen(false);
-    setIsDetailModalOpen(false);
-    setSelectedNotification(null);
-  };
-
-  const formatDays = (d) => {
-    if (d < 0) return `${Math.abs(d)} Gün Gecikti`;
-    if (d === 0) return `Bugün Teslim`;
-    if (d === 1) return `1 Gün Kaldı`;
-    return `${d} Gün Kaldı`;
   };
 
   return (
     <div className="books-container">
 
       <div className="books-header">
-        <h1>Yaklaşan Teslimler</h1>
-        <p>Ödünç alınan kitapların teslim tarihlerini buradan takip edebilirsin.</p>
+        <h1>Bildirimler</h1>
+        <p>Duyurular ve iade talepleri</p>
       </div>
 
+      {error && (
+        <div style={{ background: "#fee", color: "#c53030", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>
+          {error}
+        </div>
+      )}
+
+      {/* Borrow records section */}
+      <div style={{ marginBottom: "24px" }}>
+        <h2>Ödünç Aldıklarım</h2>
+        {loading ? (
+          <p>Yükleniyor...</p>
+        ) : borrowRecords.length === 0 ? (
+          <p>Aktif ödünç kaydınız yok.</p>
+        ) : (
+          <div className="notif-list">
+            {borrowRecords.map((r) => (
+              <div className="notif-card" key={r.id} style={{ position: "relative" }}>
+                <div className="notif-left">
+                  <div className="notif-cover" style={{ background: "#e6f4ff" }}>
+                    📘
+                  </div>
+                  <div>
+                    <h3>Kitap ID: {r.bookId}</h3>
+                    <p className="notif-author">Alınma: {new Date(r.borrowDate).toLocaleDateString()}</p>
+                    {r.returnDate && <p className="notif-author">İade Tarihi: {new Date(r.returnDate).toLocaleDateString()}</p>}
+                  </div>
+                </div>
+
+                <div className="notif-right" style={{ marginRight: "30px" }}>
+                  <span
+                    className="notif-badge"
+                    style={{
+                      background: r.returnRequested ? "#edf2f7" : "#c6f6d5",
+                      color: r.returnRequested ? "#4a5568" : "#2f855a"
+                    }}
+                  >
+                    {r.returnRequested ? "Talep Gönderildi" : "Devam ediyor"}
+                  </span>
+
+                  <button
+                    className="approve"
+                    onClick={() => handleRequestReturn(r.id)}
+                    disabled={r.returnRequested}
+                    style={{ marginTop: "8px", cursor: r.returnRequested ? "default" : "pointer" }}
+                  >
+                    {r.returnRequested ? "Beklemede" : "İade Talebi Oluştur"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Notifications section */}
       <div className="notif-list">
         {notifications.map((b) => (
           <div
             className="notif-card"
             key={b.id}
-            style={{ position: 'relative', cursor: b.returnRequested ? 'default' : 'pointer' }}
-            onClick={() => !b.returnRequested && handleNotificationClick(b)}
+            style={{ position: 'relative' }}
+            onClick={() => markAsRead(b.id)}
           >
 
-            <button
-              onClick={(e) => handleDeleteClick(e, b.id)}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#a0aec0',
-                padding: '5px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '50%',
-                transition: 'all 0.2s',
-                zIndex: 10
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#e53e3e';
-                e.currentTarget.style.background = '#fff5f5';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#a0aec0';
-                e.currentTarget.style.background = 'transparent';
-              }}
-              title="Bildirimi Sil"
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+          <button
+            onClick={(e) => handleDeleteClick(e, b.id)}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#a0aec0',
+              padding: '5px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              transition: 'all 0.2s',
+              zIndex: 10
+            }}
+            title="Bildirimi Sil"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
 
             <div className="notif-left">
-              <img src={b.image} alt={b.title} className="notif-cover" />
+              <div className="notif-cover" style={{ background: b.isRead ? "#edf2f7" : "#e6fffa" }}>
+                📢
+              </div>
               <div>
                 <h3>{b.title}</h3>
-                <p className="notif-author">{b.author}</p>
+                <p className="notif-author">{b.content}</p>
               </div>
             </div>
 
             <div className="notif-right" style={{ marginRight: '30px' }}>
-              {b.returnRequested ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
-                  <span className="notif-badge" style={{ background: '#ebf8ff', color: '#3182ce' }}>
-                    İade Talebi Oluşturuldu
-                  </span>
-                  <span style={{ fontSize: '0.9rem', color: '#718096', fontWeight: '500' }}>
-                    3 Gün Kaldı
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <span
-                    className={
-                      b.daysLeft < 0
-                        ? "notif-badge late"
-                        : b.daysLeft <= 2
-                          ? "notif-badge warning"
-                          : "notif-badge ok"
-                    }
-                  >
-                    {formatDays(b.daysLeft)}
-                  </span>
-
-                  <span className="notif-date">Teslim Tarihi: {b.dueDate}</span>
-                </>
-              )}
+              <span
+                className="notif-badge"
+                style={{
+                  background: b.isRead ? "#edf2f7" : "#c6f6d5",
+                  color: b.isRead ? "#4a5568" : "#2f855a"
+                }}
+              >
+                {b.isRead ? "Okundu" : "Yeni"}
+              </span>
+              <span className="notif-date">
+                {new Date(b.createdAtUtc || b.createdAt || Date.now()).toLocaleString()}
+              </span>
             </div>
 
           </div>
@@ -164,31 +197,6 @@ export default function NotificationsPage() {
         onConfirm={handleConfirmDelete}
         title="Bildirimi Sil"
         message="Bu bildirimi silmek istediğinize emin misiniz? Bu işlem geri alınamaz."
-      />
-
-      <NotificationDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        notification={selectedNotification}
-        onReturn={handleReturnClick}
-      />
-
-      <ConfirmModal
-        isOpen={isReturnConfirmOpen}
-        onClose={() => setIsReturnConfirmOpen(false)}
-        onConfirm={handleConfirmReturn}
-        title="İade Talebi"
-        message="İade talebi oluşturmak istiyor musunuz?"
-        confirmText="Evet, Oluştur"
-        cancelText="İptal"
-        isDanger={false}
-      />
-
-      <SuccessModal
-        isOpen={isSuccessOpen}
-        onClose={handleCloseSuccess}
-        title="Talep Alındı"
-        message="3 gün içerisinde kütüphane personeline teslim edebilirsiniz."
       />
     </div>
   );

@@ -1,26 +1,23 @@
 import "../styles/profile.css";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useNotification } from "../context/NotificationContext";
+import { useAuth } from "../context/AuthContext";
+import { usersAPI } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
 import SuccessModal from "../components/SuccessModal";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  // Kullanıcı bilgileri state
-  const [user, setUser] = useState({
-    firstName: "Ahmet",
-    lastName: "Yılmaz",
-    username: "ahmety",
-    email: "ahmet@example.com",
-    role: localStorage.getItem("role") || "kullanici",
-  });
+  const { user: authUser } = useAuth();
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [user, setUser] = useState(null);
 
   // Düzenleme modu state
   const [isEditing, setIsEditing] = useState(false);
 
   // Form verileri için geçici state
-  const [formData, setFormData] = useState({ ...user });
+  const [formData, setFormData] = useState({});
 
   // Bildirim context'inden verileri al (ödünç alınan kitaplar olarak kullanacağız)
   const { borrowedBooks, returnBook } = useNotification();
@@ -29,8 +26,45 @@ export default function ProfilePage() {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState(null);
 
+  useEffect(() => {
+    const loadUser = async () => {
+      if (!authUser?.id) {
+        setLoadingUser(false);
+        return;
+      }
+      try {
+        const dto = await usersAPI.getById(authUser.id);
+        const mapped = {
+          id: dto.id,
+          firstName: dto.name,
+          lastName: dto.surname,
+          username: dto.userName,
+          email: dto.email,
+          role: authUser.role,
+          phone: dto.phone ?? "",
+          registrationDate: dto.registrationDate
+        };
+        setUser(mapped);
+        setFormData(mapped);
+      } catch (err) {
+        console.error("Profil verisi yüklenemedi:", err);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    loadUser();
+  }, [authUser]);
+
+  if (loadingUser || !user) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "70vh" }}>
+        Profil yükleniyor...
+      </div>
+    );
+  }
+
   // Kullanıcının baş harflerini al
-  const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+  const initials = `${(user.firstName ?? "").charAt(0)}${(user.lastName ?? "").charAt(0)}`.toUpperCase();
 
   // Düzenleme modunu aç
   const handleEditClick = () => {
@@ -49,9 +83,25 @@ export default function ProfilePage() {
 
   // Değişiklikleri kaydet
   const handleSave = () => {
-    setUser(formData);
-    setIsEditing(false);
-    alert("Bilgileriniz başarıyla güncellendi!");
+    if (!user?.id) return;
+    const payload = {
+      id: user.id,
+      email: formData.email,
+      name: formData.firstName,
+      surname: formData.lastName,
+      phone: formData.phone?.trim() || null,
+      registrationDate: formData.registrationDate ?? user.registrationDate ?? new Date().toISOString()
+    };
+
+    usersAPI.update(user.id, payload)
+      .then(() => {
+        setUser({ ...formData });
+        setIsEditing(false);
+        alert("Bilgileriniz başarıyla güncellendi!");
+      })
+      .catch((err) => {
+        alert(err.message || "Güncelleme sırasında bir hata oluştu.");
+      });
   };
 
   // İptal et
@@ -97,7 +147,8 @@ export default function ProfilePage() {
               <p><strong>Soyad:</strong> {user.lastName}</p>
               <p><strong>Kullanıcı Adı:</strong> {user.username}</p>
               <p><strong>E-posta:</strong> {user.email}</p>
-              <p><strong>Rol:</strong> {user.role === "admin" ? "Admin" : "Kullanıcı"}</p>
+              <p><strong>Telefon:</strong> {user.phone || "-"}</p>
+              <p><strong>Rol:</strong> {user.role === "LibraryStaff" ? "Personel" : "Kullanıcı"}</p>
 
               <button className="edit-btn" onClick={handleEditClick}>
                 Bilgileri Düzenle
@@ -145,6 +196,17 @@ export default function ProfilePage() {
                   id="email"
                   name="email"
                   value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phone">Telefon</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone || ""}
                   onChange={handleInputChange}
                 />
               </div>

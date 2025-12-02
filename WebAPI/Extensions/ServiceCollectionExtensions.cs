@@ -103,6 +103,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CategoryRepository>(sp => new CategoryRepository(sp.GetRequiredService<LibraryContext>()));
         services.AddScoped<UserRepository>(sp => new UserRepository(sp.GetRequiredService<LibraryContext>()));
         services.AddScoped<BorrowRecordRepository>(sp => new BorrowRecordRepository(sp.GetRequiredService<LibraryContext>()));
+        services.AddScoped<AnnouncementRepository>(sp => new AnnouncementRepository(sp.GetRequiredService<LibraryContext>()));
+        services.AddScoped<NotificationRepository>(sp => new NotificationRepository(sp.GetRequiredService<LibraryContext>()));
 
         // Service Registration
         services.AddScoped<IJwtService, JwtManager>();
@@ -112,6 +114,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICategoryService, CategoryManager>();
         services.AddScoped<IUserService, UserManager>();
         services.AddScoped<IBorrowRecordService, BorrowRecordManager>();
+        services.AddScoped<IAnnouncementService, AnnouncementManager>();
+        services.AddScoped<INotificationService, NotificationManager>();
         
         // ChatBot Service with HttpClient
         services.AddHttpClient<IChatBotService, ChatBotService>();
