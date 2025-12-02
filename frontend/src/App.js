@@ -7,19 +7,28 @@ import BookDetailPage from "./pages/BookDetailPage";
 import Navbar from "./components/Navbar";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
+import AdminNotificationsPage from "./pages/AdminNotificationsPage";
+import LandingPage from "./pages/LandingPage";
+
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
+
           <Navbar />
+
           <Routes>
-            <Route path="/" element={<LoginPage />} />
+            {/* 🔹 AÇILIŞTA LANDING GÖRÜNSÜN */}
+            <Route path="/" element={<LandingPage />} />
+
+            {/* 🔹 Login sayfası */}
+            <Route path="/login" element={<LoginPage />} />
+
             <Route
               path="/home"
               element={
@@ -28,6 +37,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/books"
               element={
@@ -36,14 +46,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute requiredRole="LibraryStaff">
-                  <AdminPage />
-                </ProtectedRoute>
-              }
-            />
+
             <Route
               path="/books/:id"
               element={
@@ -52,6 +55,25 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requiredRole="LibraryStaff">
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/notifications"
+              element={
+                <ProtectedRoute requiredRole="LibraryStaff">
+                  <AdminNotificationsPage />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/profile"
               element={
@@ -60,6 +82,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/notifications"
               element={
@@ -69,11 +92,11 @@ function App() {
               }
             />
           </Routes>
+
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   );
 }
-
 
 export default App;
