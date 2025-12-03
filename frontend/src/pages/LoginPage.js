@@ -6,9 +6,11 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, register, user, loading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("login"); // "login", "register"
+  const [activeTab, setActiveTab] = useState("login"); // "login", "register", "forgot-password"
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -64,7 +66,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const result = await login(loginData.usernameOrEmail, loginData.password);
-      
+
       if (result.success) {
         // Kullanıcı rolüne göre yönlendirme
         if (result.user.role === "LibraryStaff") {
@@ -81,7 +83,7 @@ export default function LoginPage() {
       setSubmitting(false);
     }
   };
-   //deneme
+
   // Kayıt işlemi
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -136,6 +138,22 @@ export default function LoginPage() {
     }
   };
 
+  // Şifre Sıfırlama İşlemi
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      setError("Lütfen e-posta adresinizi girin!");
+      return;
+    }
+
+    // Show custom popup
+    setShowSuccessPopup(true);
+
+    // Reset form
+    setForgotEmail("");
+    setError("");
+  };
+
   return (
     <div className="login-page">
       <div className="login-container">
@@ -165,21 +183,21 @@ export default function LoginPage() {
           )}
         </div>
 
-  <div className="tab-navigation">
-    <button
-      className={`tab-btn ${activeTab === "login" ? "active" : ""}`}
-      onClick={() => setActiveTab("login")}
-    >
-      Giriş Yap
-    </button>
+        <div className="tab-navigation">
+          <button
+            className={`tab-btn ${activeTab === "login" ? "active" : ""}`}
+            onClick={() => setActiveTab("login")}
+          >
+            Giriş Yap
+          </button>
 
-    <button
-      className={`tab-btn ${activeTab === "register" ? "active" : ""}`}
-      onClick={() => setActiveTab("register")}
-    >
-      Kayıt Ol
-    </button>
-  </div>
+          <button
+            className={`tab-btn ${activeTab === "register" ? "active" : ""}`}
+            onClick={() => setActiveTab("register")}
+          >
+            Kayıt Ol
+          </button>
+        </div>
 
 
         {/* Login Form */}
@@ -234,10 +252,59 @@ export default function LoginPage() {
                   type="button"
                   className="link-like"
                   style={{ border: "none", background: "transparent", color: "#2f855a", cursor: "pointer" }}
+                  onClick={() => setActiveTab("forgot-password")}
                 >
                   Sıfırla
                 </button>
               </p>
+            </div>
+          </form>
+        )}
+
+        {/* Forgot Password Form */}
+        {activeTab === "forgot-password" && (
+          <form className="login-form" onSubmit={handleForgotPassword}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <h3 style={{ color: '#2d3748', marginBottom: '8px' }}>Şifre Sıfırlama</h3>
+              <p style={{ color: '#718096', fontSize: '14px' }}>
+                Lütfen hesabınıza kayıtlı e-posta adresinizi girin.
+              </p>
+            </div>
+
+            <div className="input-group">
+              <div className="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M22 6L12 13L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <input
+                type="email"
+                name="forgotEmail"
+                placeholder="E-posta Adresi"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className="login-btn">
+              <span>Sıfırla</span>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <div className="login-footer">
+              <button
+                type="button"
+                className="link-like"
+                style={{ border: "none", background: "transparent", color: "#2f855a", cursor: "pointer" }}
+                onClick={() => setActiveTab("login")}
+              >
+                Giriş Yap'a Dön
+              </button>
             </div>
           </form>
         )}
@@ -368,6 +435,33 @@ export default function LoginPage() {
         <div className="decoration-circle circle-2"></div>
         <div className="decoration-circle circle-3"></div>
       </div>
+
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <div className="popup-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h3 className="popup-title">Sıfırlama Bağlantısı Gönderildi</h3>
+            <p className="popup-message">
+              Şifrenizi sıfırlamak için mail adresine gelen linkten sıfırlayabilirsiniz.
+            </p>
+            <button
+              className="popup-btn"
+              onClick={() => {
+                setShowSuccessPopup(false);
+                setActiveTab("login");
+              }}
+            >
+              Tamam
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
