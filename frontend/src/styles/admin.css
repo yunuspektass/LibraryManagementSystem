@@ -70,18 +70,18 @@
   animation: fadeInUp 0.6s ease-out;
 }
 
+/* --------------------------- */
 .admin-form h2,
 .admin-list h2 {
   font-size: 1.6rem;
   font-weight: 700;
   margin-bottom: 20px;
   background: linear-gradient(135deg, #4a7c59, #5a9d6a);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* --------------------------- */
-/*          Inputs             */
 /* --------------------------- */
 .admin-form input,
 .admin-form select,
@@ -240,4 +240,63 @@
   .admin-sections {
     grid-template-columns: 1fr;
   }
+}
+
+/* --------------------------- */
+/*    Announcement Section     */
+/* --------------------------- */
+.announcement-wrapper {
+  grid-column: 1 / -1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 35px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@media (max-width: 900px) {
+  .announcement-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+.announcement-card {
+  background: white;
+  border-left: 5px solid #4a7c59;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.announcement-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  margin: 0;
+}
+
+.announcement-date {
+  font-size: 0.85rem;
+  color: #718096;
+  background: #edf2f7;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.announcement-content {
+  color: #4a5568;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #a0aec0;
+  font-style: italic;
 }

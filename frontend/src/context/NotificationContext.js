@@ -22,7 +22,12 @@ export function NotificationProvider({ children }) {
     }, []);
 
     const deleteNotification = async (id) => {
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        try {
+            await notificationsAPI.delete(id);
+            setNotifications((prev) => prev.filter((n) => n.id !== id));
+        } catch (err) {
+            console.error("Bildirim silinemedi:", err);
+        }
     };
 
     const markAsRead = async (id) => {

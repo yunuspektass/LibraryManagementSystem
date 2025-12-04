@@ -24,7 +24,7 @@ const setRefreshToken = (token) => {
 // HTTP isteklerini yapan temel fonksiyon
 const apiRequest = async (endpoint, options = {}) => {
   const token = getAuthToken();
-  
+
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -41,7 +41,7 @@ const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
+
     // Token süresi dolmuşsa refresh token ile yenile
     if (response.status === 401 && !options.skipRefresh) {
       const refreshed = await refreshAuthToken();
@@ -225,7 +225,7 @@ export const authorsAPI = {
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     if (params.toString()) endpoint += `?${params.toString()}`;
-    
+
     return await apiRequest(endpoint);
   },
 
@@ -260,7 +260,7 @@ export const categoriesAPI = {
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     if (params.toString()) endpoint += `?${params.toString()}`;
-    
+
     return await apiRequest(endpoint);
   },
 
@@ -295,7 +295,7 @@ export const borrowRecordsAPI = {
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     if (params.toString()) endpoint += `?${params.toString()}`;
-    
+
     return await apiRequest(endpoint);
   },
 
@@ -348,7 +348,7 @@ export const usersAPI = {
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     if (params.toString()) endpoint += `?${params.toString()}`;
-    
+
     return await apiRequest(endpoint);
   },
 
@@ -400,6 +400,11 @@ export const announcementsAPI = {
       body: JSON.stringify(data)
     });
   },
+  delete: async (id) => {
+    return await apiRequest(`/Announcement/${id}`, {
+      method: 'DELETE'
+    });
+  },
 };
 
 // Notifications API
@@ -411,6 +416,11 @@ export const notificationsAPI = {
     return await apiRequest(`/Notification/${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ isRead: true })
+    });
+  },
+  delete: async (id) => {
+    return await apiRequest(`/Notification/${id}`, {
+      method: 'DELETE'
     });
   }
 };

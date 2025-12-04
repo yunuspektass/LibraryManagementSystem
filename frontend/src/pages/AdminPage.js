@@ -1,6 +1,8 @@
 import "../styles/admin.css";
 import { useState, useEffect } from "react";
 import { booksAPI, authorsAPI, categoriesAPI, announcementsAPI } from "../services/api";
+import SuccessModal from "../components/SuccessModal";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("books"); // "books", "authors", "categories", "announcements"
@@ -10,6 +12,20 @@ export default function AdminPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Success Modal State
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    title: "",
+    message: ""
+  });
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null
+  });
 
   // Form data states
   const [bookFormData, setBookFormData] = useState({
@@ -84,10 +100,15 @@ export default function AdminPage() {
         publishDate: bookFormData.publishDate || null,
         isAvailable: true,
       });
-      
+
       setBooks([...books, newBook]);
       setBookFormData({ title: "", authorId: "", categoryId: "", isbn: "", publishDate: "" });
-      alert("Kitap başarıyla eklendi!");
+      setBookFormData({ title: "", authorId: "", categoryId: "", isbn: "", publishDate: "" });
+      setSuccessModal({
+        isOpen: true,
+        title: "Başarılı",
+        message: "Kitap başarıyla eklendi!"
+      });
     } catch (err) {
       setError(err.message || "Kitap eklenirken bir hata oluştu");
     } finally {
@@ -115,10 +136,15 @@ export default function AdminPage() {
         birthDate: authorFormData.birthDate || null,
         biography: authorFormData.biography || null,
       });
-      
+
       setAuthors([...authors, newAuthor]);
       setAuthorFormData({ name: "", surname: "", birthDate: "", biography: "" });
-      alert("Yazar başarıyla eklendi!");
+      setAuthorFormData({ name: "", surname: "", birthDate: "", biography: "" });
+      setSuccessModal({
+        isOpen: true,
+        title: "Başarılı",
+        message: "Yazar başarıyla eklendi!"
+      });
     } catch (err) {
       setError(err.message || "Yazar eklenirken bir hata oluştu");
     } finally {
@@ -144,10 +170,15 @@ export default function AdminPage() {
         name: categoryFormData.name,
         description: categoryFormData.description || null,
       });
-      
+
       setCategories([...categories, newCategory]);
       setCategoryFormData({ name: "", description: "" });
-      alert("Kategori başarıyla eklendi!");
+      setCategoryFormData({ name: "", description: "" });
+      setSuccessModal({
+        isOpen: true,
+        title: "Başarılı",
+        message: "Kategori başarıyla eklendi!"
+      });
     } catch (err) {
       setError(err.message || "Kategori eklenirken bir hata oluştu");
     } finally {
@@ -174,12 +205,42 @@ export default function AdminPage() {
       });
       setAnnouncements([created, ...announcements]);
       setAnnouncementForm({ title: "", content: "" });
-      alert("Duyuru yayınlandı ve bildirimler gönderildi!");
+      setAnnouncementForm({ title: "", content: "" });
+      setSuccessModal({
+        isOpen: true,
+        title: "Başarılı",
+        message: "Duyuru yayınlandı ve bildirimler gönderildi!"
+      });
     } catch (err) {
       setError(err.message || "Duyuru eklenirken bir hata oluştu");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteAnnouncement = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Duyuruyu Sil",
+      message: "Bu duyuruyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          await announcementsAPI.delete(id);
+          setAnnouncements(announcements.filter(a => a.id !== id));
+          setSuccessModal({
+            isOpen: true,
+            title: "Başarılı",
+            message: "Duyuru başarıyla silindi."
+          });
+        } catch (err) {
+          setError(err.message || "Duyuru silinirken bir hata oluştu");
+        } finally {
+          setLoading(false);
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      }
+    });
   };
 
   if (loading && books.length === 0) {
@@ -201,25 +262,25 @@ export default function AdminPage() {
       <div className="admin-header">
         <h1>Yönetim Paneli</h1>
         <div className="tab-buttons">
-          <button 
+          <button
             className={`tab-button ${activeTab === "books" ? "active" : ""}`}
             onClick={() => setActiveTab("books")}
           >
             Kitaplar
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === "authors" ? "active" : ""}`}
             onClick={() => setActiveTab("authors")}
           >
             Yazarlar
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === "categories" ? "active" : ""}`}
             onClick={() => setActiveTab("categories")}
           >
             Kategoriler
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === "announcements" ? "active" : ""}`}
             onClick={() => setActiveTab("announcements")}
           >
@@ -293,8 +354,8 @@ export default function AdminPage() {
                 placeholder="Yayın Tarihi"
               />
               <div className="admin-buttons">
-                <button 
-                  className="add-btn" 
+                <button
+                  className="add-btn"
                   onClick={handleAddBook}
                   disabled={loading}
                 >
@@ -356,8 +417,8 @@ export default function AdminPage() {
                 rows="4"
               />
               <div className="admin-buttons">
-                <button 
-                  className="add-btn" 
+                <button
+                  className="add-btn"
                   onClick={handleAddAuthor}
                   disabled={loading}
                 >
@@ -409,8 +470,8 @@ export default function AdminPage() {
                 rows="4"
               />
               <div className="admin-buttons">
-                <button 
-                  className="add-btn" 
+                <button
+                  className="add-btn"
                   onClick={handleAddCategory}
                   disabled={loading}
                 >
@@ -441,52 +502,84 @@ export default function AdminPage() {
 
         {/* Duyuru Yönetimi */}
         {activeTab === "announcements" && (
-          <div className="admin-section">
-            <h2>Duyuru Yayınla</h2>
-            <div className="form-grid">
-              <div>
-                <label>Başlık</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={announcementForm.title}
-                  onChange={handleAnnouncementChange}
-                />
-              </div>
-              <div>
-                <label>İçerik</label>
-                <textarea
-                  name="content"
-                  rows="4"
-                  value={announcementForm.content}
-                  onChange={handleAnnouncementChange}
-                />
+          <div className="announcement-wrapper">
+            <div className="admin-form">
+              <h2>Duyuru Yayınla</h2>
+              <input
+                type="text"
+                name="title"
+                value={announcementForm.title}
+                onChange={handleAnnouncementChange}
+                placeholder="Duyuru Başlığı *"
+              />
+              <textarea
+                name="content"
+                rows="6"
+                value={announcementForm.content}
+                onChange={handleAnnouncementChange}
+                placeholder="Duyuru İçeriği *"
+              />
+              <div className="admin-buttons">
+                <button
+                  className="add-btn"
+                  onClick={handleAddAnnouncement}
+                  disabled={loading}
+                >
+                  {loading ? "Yayınlanıyor..." : "Duyuruyu Yayınla"}
+                </button>
               </div>
             </div>
-            <button className="add-button" onClick={handleAddAnnouncement} disabled={loading}>
-              {loading ? "Kaydediliyor..." : "Duyuruyu Yayınla"}
-            </button>
 
-            <h3 style={{ marginTop: "24px" }}>Yayınlanan Duyurular</h3>
             <div className="admin-list">
-              {announcements.map((a) => (
-                <div key={a.id} className="admin-item">
-                  <div>
-                    <strong>{a.title}</strong>
-                    <p style={{ color: "#4a5568", marginTop: "6px" }}>{a.content}</p>
-                    <small style={{ color: "#718096" }}>
-                      {a.publishedAt ? new Date(a.publishedAt).toLocaleString() : ""}
-                    </small>
+              <h2>Yayınlanan Duyurular ({announcements.length})</h2>
+              <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
+                {announcements.map((a) => (
+                  <div key={a.id} className="announcement-card">
+                    <div className="announcement-header">
+                      <h3 className="announcement-title">{a.title}</h3>
+                      <span className="announcement-date">
+                        {a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('tr-TR') : ""}
+                      </span>
+                      <button
+                        className="delete-btn"
+                        style={{ marginLeft: '10px', padding: '5px 10px', fontSize: '0.8rem' }}
+                        onClick={() => handleDeleteAnnouncement(a.id)}
+                      >
+                        Sil
+                      </button>
+                    </div>
+                    <p className="announcement-content">{a.content}</p>
                   </div>
-                </div>
-              ))}
-              {announcements.length === 0 && (
-                <p>Henüz duyuru yok.</p>
-              )}
+                ))}
+                {announcements.length === 0 && (
+                  <div className="empty-state">
+                    Henüz yayınlanmış bir duyuru bulunmuyor.
+                  </div>
+                )}
+              </div>
             </div>
+
+
+
+
           </div>
         )}
       </div>
+
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        title={successModal.title}
+        message={successModal.message}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+      />
     </div>
   );
 }
